@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Casa Bóveda — muestra de detalle</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --hueso:#EFECE5;
+  --tinta:#0B0908;
+  --acento:#8FB6AE;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+/* Sin cursor visible — igual que en el teléfono, donde el dedo no dibuja
+   ningún ícono de puntero. Antes era cursor:grab/grabbing (la manita
+   nativa del sistema), pero eso hacía que en computadora la muestra se
+   sintiera distinta al celular: un ícono que en touch no existe. */
+body{background:var(--tinta);color:var(--hueso);
+  font-family:'Jost',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;
+  cursor:none}
+
+.escena{position:absolute;inset:0;overflow:hidden;background:var(--tinta)}
+.escena video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity 1.1s cubic-bezier(.16,1,.3,1)}
+.escena video.listo{opacity:1}
+/* Lo que se ve ANTES de tocar "Ver demo" (preload="none": no hay ni un
+   cuadro de video todavía) y, si el clip llegara a fallar, lo que queda
+   para siempre. Antes era un degradado marrón que en la práctica se leía
+   casi negro — el "cuadro negro" que no gustaba. Ahora es la misma foto
+   desenfocada que usa el fondo de la landing (img/fondo.jpg): así la
+   muestra se ve como una continuación de la portada mientras espera, no
+   como un hueco roto. El degradado que sigue abajo solo la oscurece lo
+   justo para que el botón "Ver demo" se lea encima. */
+.escena .respaldo{position:absolute;inset:0;
+  background:
+    linear-gradient(160deg,rgba(20,16,13,.32),rgba(20,16,13,.58) 60%,rgba(11,9,8,.74)),
+    url('img/fondo.jpg') center/cover}
+
+.marco{position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(11,9,8,.5),transparent 22%),
+    linear-gradient(0deg,rgba(11,9,8,.6),transparent 22%)}
+.velo{position:absolute;inset:0;pointer-events:none;background:rgba(11,9,8,1);
+  opacity:.10;transition:opacity .7s cubic-bezier(.16,1,.3,1)}
+
+.serif{font-family:'Fraunces',serif;font-optical-sizing:auto;font-weight:200}
+.k{display:block;font-size:9px;letter-spacing:.36em;text-transform:uppercase;
+  color:rgba(239,236,229,.8);margin-bottom:.7vh}
+.k i{font-style:normal;color:var(--acento);margin-right:10px}
+.dato{display:block;font-size:9px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--acento)}
+.dato b{font-weight:400;color:var(--hueso)}
+
+/* ---- MOMENTOS — textos animados como en la demo grande ---- */
+.momentos{position:absolute;inset:0;pointer-events:none}
+.momento{position:absolute;opacity:0;visibility:hidden;will-change:opacity,translate}
+.momento::before{content:'';position:absolute;z-index:-1;inset:-20vh -18vw;
+  background:radial-gradient(closest-side at 50% 50%,rgba(11,9,8,.82),
+             rgba(11,9,8,.52) 30%,rgba(11,9,8,.18) 56%,rgba(11,9,8,0) 84%)}
+.momento h2{font-family:'Fraunces',serif;font-weight:200;
+  font-size:clamp(15px,2.4vw,24px);line-height:1.14;letter-spacing:-.01em;
+  margin-bottom:.8vh}
+.momento p{font-size:clamp(11px,1.2vw,14px);line-height:1.8;color:rgba(239,236,229,.8);max-width:32ch}
+
+.momento[data-pos="izq"]{left:clamp(12px,2.2vw,20px);top:50%;transform:translateY(-50%);max-width:52%}
+.momento[data-pos="der"]{right:clamp(12px,2.2vw,20px);top:50%;transform:translateY(-50%);max-width:52%;text-align:right}
+.momento[data-pos="centro"]{left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;width:80%}
+.momento[data-pos="abajo"]{left:clamp(12px,2.2vw,20px);bottom:14%;max-width:60%}
+.momento[data-pos="abajo-der"]{right:clamp(12px,2.2vw,20px);bottom:14%;max-width:52%;text-align:right}
+.momento[data-pos="arriba"]{left:clamp(12px,2.2vw,20px);top:16%;max-width:60%}
+.momento[data-pos="arriba-der"]{right:clamp(12px,2.2vw,20px);top:16%;max-width:52%;text-align:right}
+
+.pie{position:absolute;left:0;bottom:0;width:100%;
+  padding:0 clamp(12px,2vw,20px) clamp(9px,1.4vh,12px);
+  display:flex;align-items:center;gap:11px;
+  font-size:7px;letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(239,236,229,.55);pointer-events:none}
+.pie .barra{flex:1;height:1px;background:rgba(239,236,229,.18);position:relative;overflow:hidden}
+.pie .barra i{position:absolute;inset:0;transform-origin:left;transform:scaleX(0);
+  background:var(--acento)}
+
+/* El cursor visible ya NO se dibuja acá adentro — lo dibuja la página
+   de afuera (SHOCK.html), que sigue moviéndose sobre esta muestra
+   gracias a las coordenadas que este documento le manda por
+   postMessage (ver el JS, más abajo). Dibujar uno acá también se veía
+   doble. cursor:none (arriba, en el body) sigue haciendo falta para
+   que no aparezca EL NATIVO del sistema mientras tanto. */
+
+/* La muestra vive dentro de una tarjeta, y en móvil esa tarjeta mide ~340px.
+   Con el 52% de ancho que usan los anclajes en escritorio, al texto le
+   quedaban ~180px: el titular se partía en cuatro renglones y se encimaba
+   con el dato de abajo. Acá se le da casi todo el ancho y se centra el
+   bloque, que es lo que hace legible un texto sobre imagen en un recuadro
+   chico. La medida es del RECUADRO, no del teléfono: si la tarjeta es
+   angosta en un monitor grande, se aplica igual. */
+@media(max-width:520px){
+  .momento[data-pos="izq"],.momento[data-pos="der"],
+  .momento[data-pos="abajo"],.momento[data-pos="abajo-der"],
+  .momento[data-pos="arriba"],.momento[data-pos="arriba-der"],
+  .momento[data-pos="centro"]{
+    left:clamp(12px,2.2vw,20px);right:clamp(12px,2.2vw,20px);
+    max-width:none;width:auto;text-align:left;transform:translateY(-50%)}
+  .momento[data-pos="abajo"],.momento[data-pos="abajo-der"]{
+    top:auto;bottom:16%;transform:none}
+  .momento[data-pos="arriba"],.momento[data-pos="arriba-der"]{
+    top:16%;transform:none}
+  .momento h2{font-size:clamp(17px,5.4vw,22px)}
+  .momento .k{font-size:8px;letter-spacing:.28em}
+  .momento .dato{font-size:8px;letter-spacing:.2em}
+}
+
+@media(prefers-reduced-motion:reduce){ .escena video{transition:none} }
+</style>
+</head>
+<body>
+
+<div class="escena">
+  <div class="respaldo"></div>
+  <!-- preload="none" a propósito: hay CUATRO de estas muestras en la
+       página, y todas apuntan al mismo tour.mp4 de 36 MB. Con preload
+       automático el navegador arrancaba las cuatro descargas apenas las
+       tarjetas se acercaban a pantalla —144 MB y cuatro decodificadores
+       vivos a la vez—, y eso solo ya dejaba el scrub a los tirones. Ahora
+       el clip se pide recién cuando el visitante abre esta muestra. -->
+  <video id="clip" muted playsinline preload="none" disablepictureinpicture></video>
+  <div class="marco"></div>
+  <div class="velo" id="velo"></div>
+</div>
+
+<div class="momentos">
+<!-- ================= LOS CUATRO TRAMOS =================
+     Entre los cuatro cubren el recorrido ENTERO y sin huecos: cada uno
+     empieza exactamente donde termina el anterior (3-30, 30-57, 57-84,
+     84-111). Puestos en fila en la landing se ven como la demo completa
+     partida en cuatro, no como cuatro fragmentos sueltos.
+
+     Arranca en el segundo 3 y no en 0 por el mismo motivo que la demo
+     grande: los primeros segundos son la cámara acomodándose y no venden
+     nada.
+
+     Los .momento llevan data-t-desde / data-t-hasta en segundos absolutos
+     del clip, y son los mismos textos y los mismos timecodes del recorrido
+     grande — por eso cada uno cae donde la cámara baja de velocidad. Si se
+     cambia el video hay que rehacer esa medición. -->
+
+<!-- TRAMO 1 — tema: "Completar Perfil" (la tarjeta que abre esta muestra
+     en la landing). El texto ya NO describe metros cuadrados ni
+     materiales de Casa Bóveda: explica el argumento de venta de SHOCK,
+     usando este mismo recorrido como prueba en vivo de lo que dice. -->
+<section data-bloque="parte-1" data-desde="4" data-hasta="30" hidden>
+  <div class="momento" data-t-desde="4" data-t-hasta="10" data-pos="arriba">
+    <span class="k"><i>01</i>Perfil completo</span>
+    <h2 class="serif">Se muestra la<br>propiedad entera.</h2>
+    <span class="dato">Sin recortes ni ángulos elegidos · <b>todo el recorrido en pantalla</b></span>
+  </div>
+  <div class="momento" data-t-desde="14" data-t-hasta="19" data-pos="abajo">
+    <span class="k"><i>02</i>Confianza</span>
+    <h2 class="serif">El huésped reserva<br>sabiendo lo que va a encontrar.</h2>
+    <span class="dato"><b>Generamos el plano completo de cada área</b></span>
+  </div>
+  <div class="momento" data-t-desde="23" data-t-hasta="28" data-pos="der">
+    <span class="k"><i>03</i>Resultado</span>
+    <h2 class="serif">Un perfil que<br>se explica solo.</h2>
+    <span class="dato">Cada espacio, mostrado · <b>antes de que lo pregunten</b></span>
+  </div>
+</section>
+
+<!-- TRAMO 2 — tema: "Facilitar reservas" -->
+<section data-bloque="parte-2" data-desde="30" data-hasta="57" hidden>
+  <div class="momento" data-t-desde="32" data-t-hasta="37" data-pos="izq">
+    <span class="k"><i>04</i>Reservas</span>
+    <h2 class="serif">Menos consultas<br>antes de reservar.</h2>
+    <span class="dato">Cada espacio visible en el video · <b>sin información que llegue por separado</b></span>
+  </div>
+  <div class="momento" data-t-desde="44" data-t-hasta="49" data-pos="abajo-der">
+    <span class="k"><i>05</i>Rapidez</span>
+    <h2 class="serif">Una confirmación<br>más ágil.</h2>
+    <span class="dato">Todo visto antes de confirmar · <b>sin visita presencial</b></span>
+  </div>
+</section>
+
+<!-- TRAMO 3 — tema: "Optimizar recursos" -->
+<section data-bloque="parte-3" data-desde="57" data-hasta="84" hidden>
+  <div class="momento" data-t-desde="59" data-t-hasta="64" data-pos="centro">
+    <span class="k"><i>06</i>Producción</span>
+    <h2 class="serif">Un solo lugar,<br>proceso completo.</h2>
+    <span class="dato">Estudio, cámara y edición · <b>sin proveedores por separado</b></span>
+  </div>
+  <div class="momento" data-t-desde="75" data-t-hasta="80" data-pos="arriba-der">
+    <span class="k"><i>07</i>Entrega</span>
+    <h2 class="serif">Listo para tu<br>web y tus redes.</h2>
+    <span class="dato">Adaptados para web, redes y campañas · <b>listos para publicar en cualquier formato</b></span>
+  </div>
+</section>
+
+<!-- TRAMO 4 — tema: "Ahorrar tiempo" -->
+<section data-bloque="parte-4" data-desde="84" data-hasta="111" hidden>
+  <div class="momento" data-t-desde="87" data-t-hasta="92" data-pos="der">
+    <span class="k"><i>08</i>Entrega</span>
+    <h2 class="serif">Video listo<br>en 72 horas.</h2>
+    <span class="dato">Sin visitar la propiedad · <b>se trabaja desde material existente</b></span>
+  </div>
+  <div class="momento" data-t-desde="102" data-t-hasta="108" data-pos="abajo">
+    <span class="k"><i>09</i>Sin procesos largos</span>
+    <h2 class="serif">Se filma, edita y entrega<br>en días — no semanas.</h2>
+    <span class="dato"><b>producción 100% remota</b></span>
+  </div>
+</section>
+</div>
+
+<div class="pie">
+  <span id="rotulo">Casa Bóveda</span>
+  <span class="barra"><i id="avance"></i></span>
+  <span id="tramo">—</span>
+</div>
+
+<script>
+(()=>{
+'use strict';
+
+const FUENTE='video/tour.mp4';
+const quieto=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const clamp01=v=>clamp(v,0,1);
+
+const pedido=new URLSearchParams(location.search).get('bloque');
+const bloques=[...document.querySelectorAll('[data-bloque]')];
+const bloque=bloques.find(b=>b.dataset.bloque===pedido)||bloques[0];
+bloques.forEach(b=>{ if(b!==bloque) b.remove() });
+bloque.hidden=false;
+
+/* Foto de espera por bloque — antes las 4 partes usaban la misma
+   img/fondo.jpg acá adentro (la de la portada de Casa Bóveda), que ni
+   siquiera es la misma propiedad que sale en este tour. Ahora cada
+   bloque usa un FOTOGRAMA REAL sacado del propio video/tour.mp4 (punto
+   medio de su tramo DESDE-HASTA, mejorado a 4K con Higgsfield) — así la
+   foto de espera es exactamente lo que se ve un segundo después de
+   tocar "Ver demo", nunca una escena distinta. */
+const FONDOS_POR_BLOQUE={
+  'parte-1':'img/demo-parte1.jpg', 'parte-2':'img/demo-parte2.jpg',
+  'parte-3':'img/demo-parte3.jpg', 'parte-4':'img/demo-parte4.jpg'
+};
+const fondoBloque=FONDOS_POR_BLOQUE[bloque.dataset.bloque];
+if(fondoBloque){
+  document.querySelector('.escena .respaldo').style.backgroundImage=
+    "linear-gradient(160deg,rgba(20,16,13,.32),rgba(20,16,13,.58) 60%,rgba(11,9,8,.74)),url('"+fondoBloque+"')";
+}
+
+const DESDE=parseFloat(bloque.dataset.desde);
+const HASTA=parseFloat(bloque.dataset.hasta);
+const LARGO=Math.max(.5,HASTA-DESDE);
+
+const video =document.getElementById('clip');
+const veloEl=document.getElementById('velo');
+const avance=document.getElementById('avance');
+const tramo =document.getElementById('tramo');
+
+const aTC=s=>{s=Math.max(0,s|0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+tramo.textContent=aTC(DESDE)+' — '+aTC(HASTA);
+
+/* Momentos animados */
+const momentos=[...bloque.querySelectorAll('.momento')].map(el=>({
+  el,
+  desde:parseFloat(el.dataset.tDesde),
+  hasta:parseFloat(el.dataset.tHasta),
+  fundido:0, o:-1
+}));
+momentos.forEach(m=>{
+  m.fundido=Math.min(1.2,(m.hasta-m.desde)*.25);
+});
+
+function pintarMomentos(t){
+  let maxO=0;
+  for(const m of momentos){
+    const f=m.fundido;
+    const entra=clamp01((t-(m.desde-f))/f);
+    const sale =clamp01(((m.hasta+f)-t)/f);
+    const o=Math.min(entra,sale);
+    if(o<=0 && m.o<=0) continue;
+    if(Math.abs(o-m.o)>.004 || (o<=0)!==(m.o<=0)){
+      m.o=o;
+      m.el.style.opacity=o.toFixed(3);
+      m.el.style.translate=quieto?'0':'0 '+((1-entra)*20-(1-sale)*20).toFixed(1)+'px';
+      m.el.style.visibility=o<=.002?'hidden':'visible';
+    }
+    if(o>maxO) maxO=o;
+  }
+  veloEl.style.opacity=(.08+maxO*.22).toFixed(3);
+}
+
+/* Apaga todos los textos de golpe. Hacía falta esto: al tapar la muestra
+   de nuevo, el video se ocultaba (ocultarVideo) pero el video se PAUSA en
+   una posición real del clip, y si esa posición cae dentro de la ventana
+   de un momento —lo normal, ya que el visitante se detuvo justo ahí—,
+   pintarMomentos lo seguía calculando con opacidad > 0 cada cuadro. El
+   resultado era exactamente el error del screenshot: la foto de portada
+   de vuelta, pero con "El comedor / Mural de 4×3m..." pegado encima,
+   porque nadie le había avisado al texto que también tenía que irse.
+   Se resetea m.o=-1 en cada uno para que, cuando la muestra se vuelva a
+   activar, pintarMomentos no se salte el primer redibujado —compara
+   contra m.o para decidir si hace falta tocar el DOM, así que si quedara
+   en el valor viejo podría pensar que "no cambió nada" y no lo mostrara
+   a tiempo. */
+function ocultarMomentos(){
+  for(const m of momentos){
+    m.o=-1;
+    m.el.style.opacity='0';
+    m.el.style.visibility='hidden';
+  }
+  veloEl.style.opacity='.08';
+}
+
+let objetivo=DESDE, suave=DESDE, activo=false, pendiente=false, montado=false, clipPedido=false;
+
+/* El clip se pide una sola vez, y recién acá: mientras la muestra siga
+   tapada por el velo no se baja ni un byte. Con cuatro muestras en la
+   página, esto es la diferencia entre 36 MB y 144 MB. */
+function pedirClip(){
+  if(clipPedido) return;
+  clipPedido=true;
+  video.preload='auto';
+  video.src=FUENTE;
+  video.load();
+}
+
+/* Mostrar/ocultar el video es aparte de "activo": activo se pone en true
+   UNA vez y nunca se apaga (así el arrastre sigue funcionando toda la
+   vida de la página). Pero visualmente, cada vez que el velo de afuera
+   tapa la muestra, el video tiene que desaparecer y dejar ver la FOTO de
+   fondo otra vez (.escena .respaldo) — igual que la primera vez que se
+   abrió, no un cuadro del video pausado con un tinte encima. Por eso
+   mostrarVideo()/ocultarVideo() se pueden llamar las veces que hagan
+   falta, activación tras activación. */
+/* cubierta: mientras es true, cuadro() ni se molesta en llamar a
+   pintarMomentos. No alcanza con apagar los textos UNA vez al tapar
+   (ocultarMomentos) — el video queda pausado en una posición real del
+   clip, y si esa posición cae dentro de la ventana de un momento (lo
+   normal: el visitante se detuvo justo ahí), el próximo cuadro los volvía
+   a prender solo, un instante después de haberlos apagado. */
+let cubierta=false;
+function mostrarVideo(){ cubierta=false; if(montado) video.classList.add('listo') }
+function ocultarVideo(){
+  cubierta=true;
+  if(montado) video.classList.remove('listo');
+  ocultarMomentos();
+}
+
+function activar(){
+  mostrarVideo();
+  if(activo) return;
+  pedirClip();
+  if(!montado){ pendiente=true; return }
+  activo=true;
+  objetivo=suave=DESDE;
+  pedirCuadro(DESDE);
+  /* Cuenta como gesto: si no, ultimoGesto seguiría en 0 (su valor
+     inicial) y, con la página ya abierta hace rato, el reloj de
+     INACTIVO_TAPAR_MS ya estaría vencido desde antes de que el visitante
+     tocara nada — el velo volvería solo en el primer cuadro, antes de que
+     hubiera chance de scrollear. */
+  marcarGesto('presion');
+}
+addEventListener('message',e=>{
+  if(!e||!e.data) return;
+  if(e.data==='reproducir-demo') activar();
+  /* La página de afuera detectó que el mouse salió del MARCO de la
+     tarjeta (mouseleave sobre el .clip, en su propio documento — mucho
+     más confiable que intentar detectar "salió del iframe" desde acá
+     adentro, ver el comentario largo en avisarTapar más abajo). Cuando
+     eso pasa, ella misma vuelve a mostrar el velo; esto es solo para que
+     el video de acá adentro se apague en el mismo instante. */
+  if(e.data.tipo==='tapar-demo') ocultarVideo();
+});
+document.addEventListener('click',activar);
+
+/* La sensibilidad sale del largo del tramo, no de un número fijo: el gesto
+   cuesta siempre lo mismo —un arrastre de ~700 px, o unas ocho muescas de
+   rueda, recorre el tramo entero— sin importar si el tramo dura 27 s o 12. */
+const SENS_DEDO  = LARGO/520;
+const SENS_RUEDA = LARGO/660;
+
+/* Marca de "hubo gesto ahora mismo". La usa cuadro() para decidir si el
+   video sigue teniendo permiso de reproducir: sin esto, un scroll fuerte
+   podía dejar el objetivo bastante adelantado, y el video seguía
+   reproduciendo solo —alcanzándolo— varios segundos después de que el
+   visitante ya había soltado. Se actualiza en cada evento de entrada, y
+   CADA gesto nuevo reabre la posibilidad de avisar de nuevo la próxima
+   vez que el velo tenga que volver (ver avisarTapar). */
+/* ultimoTipoGesto distingue 'rueda' de 'presion' (mouse/touch). Hace
+   falta porque el reloj de INACTIVO_TAPAR_MS en cuadro() es SOLO para la
+   rueda —no tiene mouseup ni mouseleave fiable—, pero marcarGesto() se
+   llama desde los dos tipos de gesto. Sin esta distinción, el reloj
+   también tapaba la muestra 300ms después de CUALQUIER pausa entre
+   arrastres, que es exactamente lo que se acaba de sacar de mouseup. Con
+   mouse/touch el único que tapa es el mouseleave de afuera (o touchend). */
+let ultimoGesto=0, veloAvisado=false, ultimoTipoGesto=null;
+const marcarGesto=tipo=>{ ultimoGesto=performance.now(); veloAvisado=false; ultimoTipoGesto=tipo };
+
+/* Le avisa a la página de afuera que vuelva a tapar la muestra. Antes esto
+   se disparaba también al soltar el mouse (mouseup) y al salir del
+   documento de ESTE iframe (mouseleave acá adentro) — y resultó ser
+   exactamente lo que no se quería: alguien arrastrando en varios tramos
+   cortos (mousedown, arrastra un poco, suelta, mousedown de nuevo...) —
+   la forma más natural de explorar la muestra— tapaba la demo en CADA
+   suelte, aunque el mouse nunca hubiera salido del recuadro. Fastidioso y
+   se sentía trabado.
+
+   Ahora esto solo lo dispara la página de AFUERA (ver el listener de
+   'tapar-demo' más arriba), cuando detecta —con su propio mouseleave,
+   sobre el .clip que contiene a este iframe, en SU documento— que el
+   mouse salió del marco de la tarjeta de verdad. Es más confiable que
+   intentar detectarlo desde acá adentro: un mouseleave del documento del
+   iframe puede dispararse por diferencias de un píxel entre el iframe y
+   la tarjeta que lo contiene, aunque visualmente el cursor siga adentro.
+   Detectado desde afuera, sobre el elemento real que el visitante ve como
+   "el marco de la demo", no tiene ese problema.
+
+   Sigue existiendo para la RUEDA del mouse (que no tiene mouseleave
+   fiable si el usuario no mueve el mouse) vía INACTIVO_TAPAR_MS en
+   cuadro(), y para touchend (el dedo no tiene "afuera del marco": tocar y
+   soltar ES la señal). veloAvisado evita mandarlo más de una vez por
+   período quieto; cada gesto nuevo lo resetea (ver marcarGesto). */
+function avisarTapar(){
+  if(veloAvisado) return;
+  veloAvisado=true;
+  /* La foto vuelve — el video se apaga (fundido de 1.1s, la misma
+     transición que ya tenía para aparecer) y deja ver .respaldo detrás,
+     exactamente como estaba antes de tocar "Ver demo" la primera vez. */
+  ocultarVideo();
+  try{ parent.postMessage({tipo:'muestra-idle'},'*') }catch(_){}
+}
+
+addEventListener('wheel',e=>{
+  if(!activo) return;
+  e.preventDefault();
+  objetivo=clamp(objetivo+e.deltaY*SENS_RUEDA,DESDE,HASTA);
+  marcarGesto('rueda');
+},{passive:false});
+
+let dedoY=null;
+addEventListener('touchstart',e=>{
+  if(!activo) return;
+  dedoY=e.touches[0].clientY;
+  document.body.classList.add('arrastrando');
+  marcarGesto('presion');
+},{passive:true});
+addEventListener('touchmove',e=>{
+  if(!activo||dedoY==null) return;
+  e.preventDefault();
+  const y=e.touches[0].clientY;
+  objetivo=clamp(objetivo-(y-dedoY)*SENS_DEDO,DESDE,HASTA);
+  dedoY=y;
+  marcarGesto('presion');
+},{passive:false});
+addEventListener('touchend',()=>{
+  dedoY=null; document.body.classList.remove('arrastrando');
+  if(activo) avisarTapar();
+});
+
+let mouseAbajo=false, mouseY=null;
+addEventListener('mousedown',e=>{
+  if(!activo) return;
+  mouseAbajo=true; mouseY=e.clientY;
+  document.body.classList.add('arrastrando');
+  try{ parent.postMessage({tipo:'cursor-baja'},'*') }catch(_){}
+  marcarGesto('presion');
+});
+addEventListener('mousemove',e=>{
+  if(!activo||!mouseAbajo) return;
+  objetivo=clamp(objetivo-(e.clientY-mouseY)*SENS_DEDO,DESDE,HASTA);
+  mouseY=e.clientY;
+  marcarGesto('presion');
+});
+/* Ni mouseup ni mouseleave llaman a avisarTapar() acá adentro — ver el
+   comentario largo arriba de avisarTapar(). Los dos solo tienen que
+   soltar el arrastre (mouseAbajo=false), para que el próximo mousedown
+   arranque limpio; tapar la muestra le toca a la página de afuera. */
+addEventListener('mouseup',()=>{
+  mouseAbajo=false; document.body.classList.remove('arrastrando');
+  try{ parent.postMessage({tipo:'cursor-sube'},'*') }catch(_){}
+});
+addEventListener('mouseleave',()=>{
+  mouseAbajo=false; document.body.classList.remove('arrastrando');
+  try{ parent.postMessage({tipo:'cursor-sube'},'*') }catch(_){}
+});
+
+/* ---- AVISARLE A LA PÁGINA DE AFUERA DÓNDE ESTÁ EL MOUSE ----
+   El cursor que se ve es el de SHOCK.html, no uno propio de acá adentro
+   (ver el comentario arriba de .pie en el CSS: dibujar uno acá también
+   se veía doble). El problema es que un iframe es OTRO documento: la
+   página de afuera no recibe 'mousemove' mientras el puntero está
+   sobre esta muestra. La solución es mandarle las coordenadas por
+   postMessage en cada movimiento — ella las convierte a su propio
+   sistema de coordenadas sumando dónde está esta tarjeta en pantalla
+   (ver el listener de 'cursor-pos' en SHOCK.html). Solo con puntero
+   fino: en touch no hace falta nada de esto, ahí no hay cursor. */
+if(matchMedia('(pointer:fine)').matches){
+  addEventListener('mousemove',e=>{
+    try{ parent.postMessage({tipo:'cursor-pos',x:e.clientX,y:e.clientY},'*') }catch(_){}
+  });
+}
+
+/* ---------------------------------------------------------------
+   PEDIR CUADROS SIN ATROPELLAR AL DECODIFICADOR
+
+   Esto es lo que hacía que el scrub se sintiera trabado. Antes, cada
+   vuelta de requestAnimationFrame escribía video.currentTime — sesenta
+   veces por segundo. Una búsqueda tarda bastante más que un cuadro, y
+   escribir currentTime mientras hay una en vuelo hace que el navegador
+   ABORTE la anterior y arranque de nuevo. Con el gesto en movimiento eso
+   se repite sin parar: la búsqueda nunca llega a completarse, casi ningún
+   cuadro alcanza a pintarse, y lo que se ve es un salto cada tanto.
+
+   Acá se pide UNA sola búsqueda por vez y la siguiente recién sale cuando
+   la anterior terminó ('seeked'). El decodificador va a su ritmo y pinta
+   todos los cuadros que puede, que es lo que se lee como fluidez. El clip
+   tiene un keyframe cada 0,2 s (559 en 111,8 s), así que cada búsqueda es
+   barata y el ritmo real termina siendo alto.
+   --------------------------------------------------------------- */
+let buscando=false, tSolicitud=0;
+
+video.addEventListener('seeking',()=>{ buscando=true; tSolicitud=performance.now() });
+video.addEventListener('seeked' ,()=>{ buscando=false });
+
+function pedirCuadro(t){
+  /* Red de seguridad: si una búsqueda se cuelga —tramo todavía sin
+     descargar— no se puede quedar trabado para siempre esperando el
+     'seeked' que no va a llegar. */
+  if(buscando && performance.now()-tSolicitud<350) return;
+  if(Math.abs(video.currentTime-t)<.015) return;
+  buscando=true; tSolicitud=performance.now();
+  try{
+    /* fastSeek se clava en el keyframe más cercano en vez de decodificar
+       hasta el cuadro exacto: bastante más barato, y con keyframes cada
+       0,2 s la diferencia no se ve. Chrome no lo implementa y cae solo al
+       camino normal. */
+    if(video.fastSeek) video.fastSeek(t); else video.currentTime=t;
+  }catch(_){ buscando=false }
+}
+
+/* ---------------------------------------------------------------
+   EL MOTOR — HACIA ADELANTE SIEMPRE SE REPRODUCE, NUNCA SE CORTA
+
+   Antes había un umbral (dif>9): si el objetivo quedaba muy lejos, el
+   motor abandonaba la reproducción y hacía un salto directo (una
+   búsqueda). Ese salto es exactamente el corte que se reportó — y como
+   con la rueda del mouse cada golpe puede empujar el objetivo varios
+   segundos de una vez, scrollear rápido disparaba ESE salto seguido: más
+   rápido el gesto, más cortes, ni un segundo de reproducción continua
+   entre uno y el siguiente.
+
+   Ahora no existe ese umbral. Hacia adelante SIEMPRE se reproduce, sin
+   importar lo lejos que esté el objetivo — el video se queda atrás y lo
+   va alcanzando, en vez de cortar hacia él. Es más lento en llegar al
+   punto exacto tras un scroll muy largo, pero nunca dejar de reproducir
+   es lo que se lee como fluido; un salto, por barato que sea, siempre se
+   lee como un corte.
+
+   El techo de velocidad (1.6x, igual que la demo grande) es lo que evita
+   el otro problema: sin techo, un gesto muy lejano pediría una velocidad
+   altísima y el clip se vería agitado en vez de fluido. Con el techo,
+   scrollear rápido simplemente hace que el video reproduzca a su máximo
+   sostenido y siga alcanzando el gesto un rato después de que termine —
+   se ve como una toma acelerada, no como algo roto.
+
+   Buscar (pedirCuadro) queda solo para lo que no tiene alternativa: ir
+   hacia ATRÁS, porque el video no puede reproducirse en reversa. */
+const TECHO_VELOCIDAD=1.6;
+
+/* Sin gesto en los últimos 140 ms, se considera que el visitante soltó. Un
+   scroll de trackpad dispara eventos 'wheel' bastante más seguido que eso
+   mientras el dedo sigue en marcha, así que un gesto normal nunca cae acá
+   en el medio — pero apenas el dedo se levanta, el video dispone de esta
+   ventana nada más antes de cortar la persecución. */
+const INACTIVO_MS=140;
+
+function reproducir(rate){
+  video.playbackRate=clamp(rate,.1,TECHO_VELOCIDAD);
+  if(video.paused){
+    const p=video.play();
+    if(p&&p.catch) p.catch(()=>{});
+  }
+}
+
+let finAvisado=false;
+
+function motor(){
+  const t=video.currentTime;
+  const dif=suave-t;
+
+  if(t<HASTA-.5) finAvisado=false;
+
+  /* Llegó al final del tramo: se queda ahí, nunca se pasa al tramo
+     siguiente ni vuelve al principio del clip — pero SÍ le avisa a la
+     página de afuera, una sola vez, para que ella decida empujar al
+     visitante a la siguiente estación del riel. */
+  if(t>=HASTA-.04 && dif>=0){
+    if(!video.paused) video.pause();
+    if(!finAvisado){
+      finAvisado=true;
+      try{ parent.postMessage({tipo:'muestra-fin'},'*') }catch(_){}
+    }
+    return;
+  }
+  if(Math.abs(dif)<=.045){          /* encima del objetivo */
+    if(!video.paused) video.pause();
+  }else if(dif>0){                  /* adelante: siempre reproduce, nunca corta */
+    reproducir(dif/.4);
+  }else{                            /* atrás — no hay reproducción inversa */
+    if(!video.paused) video.pause();
+    pedirCuadro(suave);
+  }
+}
+
+function cuadro(){
+  requestAnimationFrame(cuadro);
+  if(!activo||!montado) return;
+  const inactivoMs=performance.now()-ultimoGesto;
+  /* SOLO SE MUEVE MIENTRAS HAY GESTO. Si el visitante ya soltó (más de
+     140 ms sin wheel/touch/mouse), el objetivo colapsa a donde el video
+     esté parado en ese instante — así el motor dif=0 en el próximo
+     cuadro y se pausa, en vez de seguir reproduciendo solo para alcanzar
+     un objetivo que quedó lejos de un scroll fuerte. Es la diferencia
+     entre "reproduce mientras escrolleás" y "reproduce un rato después de
+     que soltaste", que es justo lo que se pidió corregir. */
+  if(inactivoMs>INACTIVO_MS){
+    objetivo=suave=clamp(video.currentTime,DESDE,HASTA);
+  }else{
+    suave+=(objetivo-suave)*(quieto?1:.28);
+    if(Math.abs(objetivo-suave)<.004) suave=objetivo;
+  }
+  motor();
+  /* La foto de portada ("Ver demo") SOLO vuelve cuando el visitante sale
+     de verdad de la tarjeta — mouseleave de afuera (ver 'tapar-demo' más
+     arriba) o touchend en touch. Antes también volvía sola 300ms después
+     de dejar de mover la rueda, y eso hacía que una pausa normal en medio
+     de explorar el recorrido —bajar la velocidad del scroll un segundo,
+     por ejemplo— tapara la muestra aunque el mouse siguiera adentro. Se
+     sacó ese reloj: mientras el puntero no cruce el borde de la tarjeta,
+     escrollear o pausar adentro nunca la tapa. */
+  /* Se pinta con el tiempo REAL del video, no con el objetivo: mientras
+     el cuadro persigue al gesto, el texto tiene que corresponder a lo que
+     se está viendo, no a dónde va a llegar. */
+  const t=clamp(video.currentTime,DESDE,HASTA);
+  avance.style.transform='scaleX('+((t-DESDE)/LARGO).toFixed(4)+')';
+  /* Mientras está tapada no se pinta nada: si no, el próximo cuadro
+     volvería a calcular opacidad > 0 para el momento que cae justo en la
+     posición donde el video quedó pausado, y lo prendería de nuevo un
+     instante después de que ocultarMomentos() lo hubiera apagado. */
+  if(!cubierta) pintarMomentos(t);
+}
+
+video.addEventListener('loadedmetadata',()=>{
+  montado=true;
+  /* No un 'video.classList.add(listo)' directo: si el visitante ya soltó
+     y volvió a tapar la muestra ANTES de que el clip terminara de cargar
+     (posible con conexiones lentas), esto no debe deshacer esa tapa. */
+  if(!cubierta) video.classList.add('listo');
+  if(!cubierta) pintarMomentos(DESDE);
+  pedirCuadro(DESDE);
+  if(pendiente){ pendiente=false; activar() }
+},{once:true});
+/* Sin video la muestra no se rompe: queda el degradado y los textos. */
+video.addEventListener('error',()=>{},{once:true});
+
+/* Ojo: acá NO se llama a pedirClip(). El clip lo pide activar(), cuando
+   el visitante abre la muestra con el botón. */
+requestAnimationFrame(cuadro);
+})();
+</script>
+</body>
+</html>
