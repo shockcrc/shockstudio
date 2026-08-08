@@ -1020,6 +1020,18 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .banda-desde{display:block;margin-top:1.4vh;font-size:11px;letter-spacing:.22em;
   text-transform:uppercase;color:var(--ink2)}
 
+/* Estación "gancho" — una sola idea centrada, sin biografía de marca.
+   Puente entre la portada y "Antes": dos líneas, se lee en dos segundos. */
+.est.gancho{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:2vh;padding:0 4vw}
+.gancho-linea{margin:0;font-weight:300;font-size:clamp(30px,4vw,58px);line-height:1.2;
+  letter-spacing:-.01em;color:var(--ink);max-width:18ch}
+.gancho-sub{display:block;font-size:14px;letter-spacing:.04em;color:var(--ink2)}
+@media(max-width:820px){
+  .gancho-linea{font-size:clamp(24px,7vw,34px)}
+  .gancho-sub{font-size:12.5px}
+}
+
 /* Estación "De estático a movimiento cinematográfico" — una sola fila de 4
    fotos fijas (el punto de partida); el "después" es la estación siguiente
    ("Nuestro valor"), que ya muestra el resultado en movimiento — sin
@@ -1365,6 +1377,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
     <span data-est>05</span>
     <span data-est>06</span>
     <span data-est>07</span>
+    <span data-est>08</span>
   </div>
 </div>
 
@@ -1414,14 +1427,24 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 
       </div>
 
-      <!-- 02 — ANTES — así se ve la propiedad en la mayoría de los anuncios,
+      <!-- 02 — GANCHO — puente entre la portada y "Antes". Una sola idea de
+           mercado (competencia por la misma reserva), no una bio de marca:
+           el objetivo es que no se sienta frío pasar de la portada al
+           contraste antes/después, sin caer en el típico párrafo de
+           "quiénes somos". -->
+      <div class="est gancho" data-est-panel data-num="02">
+        <p class="gancho-linea serif">Cientos de propiedades compiten por el mismo huésped.</p>
+        <span class="gancho-sub">Lo primero que ve decide quién gana esa reserva.</span>
+      </div>
+
+      <!-- 03 — ANTES — así se ve la propiedad en la mayoría de los anuncios,
            material tipo foto de celular. Es el "antes" de la comparación:
            el "después" es directamente la estación que sigue, "Nuestro
            valor", que ya muestra el resultado real — no hay que duplicar
            nada acá, la secuencia misma arma el contraste. -->
-      <div class="est comparacion" data-est-panel data-num="02">
+      <div class="est comparacion" data-est-panel data-num="03">
         <div class="seccion-cab">
-          <h2 class="serif">Antes de <em>SHOCK</em></h2>
+          <h2 class="serif">Antes</h2>
           <span class="contador">Así llega la mayoría de las propiedades</span>
         </div>
         <div class="comparacion-mosaico">
@@ -1451,9 +1474,9 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
            fila) y el texto sigue viviendo dentro de la caja que se abre, o
            sea oculto hasta que alguien lo pide. Una fila por estación, así
            que el problema de alto del 2x2 no aparece. -->
-      <div class="est triptico dos con-intro" id="valor" data-est-panel data-num="03">
+      <div class="est triptico dos con-intro" id="valor" data-est-panel data-num="04">
         <div class="seccion-cab">
-          <h2 class="serif">Nuestro <em>valor</em></h2>
+          <h2 class="serif">Después</h2>
           <span class="contador">Razones 01 — 02</span>
         </div>
         <!-- El manifiesto que antes vivía en la portada ("Tu hospedaje
@@ -1510,7 +1533,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
       </div>
 
       <!-- 03 — NUESTRO VALOR (2/2) — las otras dos razones -->
-      <div class="est triptico dos" data-est-panel data-num="04">
+      <div class="est triptico dos" data-est-panel data-num="05">
         <div class="seccion-cab">
           <h2 class="serif">Nuestro <em>valor</em></h2>
           <span class="contador">Razones 03 — 04</span>
@@ -1566,7 +1589,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
            los cuatro tramos que "Nuestro valor" ya mostró. Mejor sin ese
            hueco que con uno relleno a la fuerza — la estación pasa a ser
            una sola columna centrada. -->
-      <div class="est fichas" id="servicio" data-est-panel data-num="05">
+      <div class="est fichas" id="servicio" data-est-panel data-num="06">
         <div class="fichas-cuerpo">
           <div class="seccion-cab">
             <h2 class="serif">Qué recibís</h2>
@@ -1612,7 +1635,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
            resueltas justo antes de la estación de precios. Mismo componente
            .caja-info que el resto del sitio (clic o hover para abrir), así
            no se suma ningún patrón de interacción nuevo. -->
-      <div class="est fichas preguntas" id="preguntas" data-est-panel data-num="06">
+      <div class="est fichas preguntas" id="preguntas" data-est-panel data-num="07">
         <div class="fichas-cuerpo">
           <div class="seccion-cab">
             <h2 class="serif">Preguntas</h2>
@@ -1623,6 +1646,16 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
               <span class="n">01</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
+                  <h3>¿Cómo se trabaja?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Nos mandás fotos y video de tu propiedad, lo producimos con dirección de arte e IA de video, lo ajustamos hasta que estés conforme, y lo recibís listo en 72 horas — sin visitas ni coordinación de equipo.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">02</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
                   <h3>¿Necesito equipo profesional?</h3>
                   <span class="caja-mas">+</span>
                 </div>
@@ -1630,7 +1663,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
               </div>
             </li>
             <li>
-              <span class="n">02</span>
+              <span class="n">03</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
                   <h3>¿Y si no me convence el resultado?</h3>
@@ -1640,23 +1673,23 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
               </div>
             </li>
             <li>
-              <span class="n">03</span>
-              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
-                <div class="caja-cab">
-                  <h3>¿El video queda con restricciones?</h3>
-                  <span class="caja-mas">+</span>
-                </div>
-                <p>No. Una vez entregado es tuyo para siempre — en tu web, tus redes o donde quieras mostrarlo, sin letra chica.</p>
-              </div>
-            </li>
-            <li>
               <span class="n">04</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
-                  <h3>¿Por qué 72 horas y no semanas?</h3>
+                  <h3>¿El pago es seguro?</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>Porque no coordinamos equipo de filmación ni viajes a tu propiedad — la IA de video reemplaza esos pasos, sin sacrificar dirección de arte.</p>
+                <p>Se procesa online con pasarela de pago segura, tarjeta de crédito o débito. Nada se coordina por transferencias informales ni fuera de plataforma.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">05</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>¿El precio que veo es el final?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Sí, sin cargos ocultos. Lo único que puede variar es si necesitás cobertura a medida — y eso se cotiza antes de que pagues un centavo.</p>
               </div>
             </li>
           </ul>
@@ -1669,10 +1702,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
            documento) decide a dónde va según lo que haya en la configuración.
            Así cambiar de procesador de pago es tocar una constante, no seis
            enlaces repartidos por el HTML. -->
-      <div class="est planes" id="catalogo" data-est-panel data-num="07">
+      <div class="est planes" id="catalogo" data-est-panel data-num="08">
         <div class="seccion-cab">
           <h2 class="serif">Planes</h2>
-          <span class="contador">Tres niveles</span>
+          <span class="contador">Tres niveles — ajustes incluidos, tuyo para siempre</span>
         </div>
         <div class="planes-grid">
           <!-- La escalera de planes: los TRES entregables son siempre los
@@ -1739,7 +1772,6 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
              depende del alcance, así que compararlo al lado de tres precios
              cerrados confunde en vez de ayudar. Vive como una línea al pie
              que abre conversación. -->
-        <p class="planes-pie planes-garantia">Ajustamos cada entrega hasta que sea exactamente lo que tu propiedad merece — no la aprobás, no se publica. Y una vez que es tuya, es tuya para siempre: sin letra chica.</p>
         <p class="planes-pie">¿Necesitás disponibilidad completa — video completo más tomas sueltas
           detalladas, 12 tomas o más, cadenas o varias propiedades?
           <button type="button" class="enlace-pie" data-plan="completa">Pedí una cotización</button>.</p>
