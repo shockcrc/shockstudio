@@ -1020,26 +1020,19 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .banda-desde{display:block;margin-top:1.4vh;font-size:11px;letter-spacing:.22em;
   text-transform:uppercase;color:var(--ink2)}
 
-/* Estación "gancho" — puente entre la portada y "Antes". Con más de una
-   línea suelta: eyebrow + titular grande + un párrafo de contexto sobre
-   qué hay en juego en una propiedad + el cierre de diferenciación. Así no
-   queda una frase sola perdida en el centro de la pantalla. */
+/* Estación "gancho" — puente entre la portada y "Antes". Una sola frase,
+   directa y grande, sin párrafos de relleno: dice por qué importa la
+   presentación de la propiedad y ya. */
 .est.gancho{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;gap:2.6vh;padding:0 4vw}
-.gancho-eyebrow{display:block;font-size:13px;letter-spacing:.34em;text-transform:uppercase;
+  text-align:center;gap:3vh;padding:0 4vw}
+.gancho-eyebrow{display:block;font-size:14px;letter-spacing:.34em;text-transform:uppercase;
   color:var(--accent)}
-.gancho-linea{margin:0;font-weight:300;font-size:clamp(44px,6.6vw,104px);line-height:1.12;
-  letter-spacing:-.01em;color:var(--ink);max-width:16ch}
-.gancho-contexto{margin:0;font-size:clamp(19px,2vw,27px);line-height:1.6;
-  color:rgba(242,237,228,.78);max-width:56ch}
-.gancho-sub{display:block;font-size:16px;letter-spacing:.06em;color:var(--ink2);
-  padding-top:1.4vh;border-top:1px solid var(--line);max-width:56ch}
+.gancho-linea{margin:0;font-weight:300;font-size:clamp(50px,8vw,132px);line-height:1.08;
+  letter-spacing:-.01em;color:var(--ink);max-width:17ch}
 @media(max-width:820px){
-  .est.gancho{gap:1.8vh}
+  .est.gancho{gap:2vh}
   .gancho-eyebrow{font-size:11px}
-  .gancho-linea{font-size:clamp(30px,9vw,44px)}
-  .gancho-contexto{font-size:16px;line-height:1.55}
-  .gancho-sub{font-size:13px}
+  .gancho-linea{font-size:clamp(34px,10vw,52px)}
 }
 
 /* Estación "De estático a movimiento cinematográfico" — una sola fila de 4
@@ -1060,13 +1053,16 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .comparacion-tag{position:absolute;left:10px;bottom:8px;z-index:1;font-family:'Fraunces',serif;
   font-weight:300;font-size:13px;letter-spacing:.16em;color:var(--ink);
   text-shadow:0 1px 6px rgba(0,0,0,.6)}
-.comparacion-nota{margin:0;font-size:13px;line-height:1.6;color:var(--ink2);max-width:48ch}
+.comparacion-caja{max-width:420px;align-self:flex-start}
+.comparacion-caja h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(19px,2vw,24px);line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+.comparacion-caja p{font-size:14.5px;line-height:1.7;color:rgba(242,237,228,.72);max-width:36ch}
 @media(max-width:820px){
   .est.comparacion{gap:1.8vh}
   .comparacion-mosaico{grid-template-columns:1fr 1fr;gap:6px;padding:8px}
   .comparacion-item img{aspect-ratio:4/3}
   .comparacion-tag{font-size:11px;left:8px;bottom:6px}
-  .comparacion-nota{font-size:11.5px}
+  .comparacion-caja{max-width:100%}
 }
 
 @media(max-width:1240px){
@@ -1452,9 +1448,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
            "quiénes somos". -->
       <div class="est gancho" data-est-panel data-num="02">
         <span class="gancho-eyebrow">Por qué importa</span>
-        <p class="gancho-linea serif">De propiedad estática a propiedad visual.</p>
-        <p class="gancho-contexto">Antes de leer una sola palabra, el huésped ya decidió si sigue mirando o pasa a la siguiente propiedad. Ese instante — unos segundos de scroll — es todo lo que tenés para retenerlo.</p>
-        <span class="gancho-sub">Tours inmersivos y cinematográficos, 100% remotos — eso es lo que hacemos.</span>
+        <p class="gancho-linea serif">La presentación de tu propiedad puede elevarse a tour inmersivo.</p>
       </div>
 
       <!-- 03 — ANTES — así se ve la propiedad en la mayoría de los anuncios,
@@ -1465,7 +1459,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
       <div class="est comparacion" data-est-panel data-num="03">
         <div class="seccion-cab">
           <h2 class="serif">Antes</h2>
-          <span class="contador">Así llega la mayoría de las propiedades</span>
+          <span class="contador">Fotos fijas, sin recorrido, sin movimiento</span>
         </div>
         <div class="comparacion-mosaico">
           <div class="comparacion-item"><img src="img/comparacion-antes-1.jpg" alt="" loading="lazy"><span class="comparacion-tag">01</span></div>
@@ -1473,7 +1467,13 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <div class="comparacion-item"><img src="img/comparacion-antes-3.jpg" alt="" loading="lazy"><span class="comparacion-tag">03</span></div>
           <div class="comparacion-item"><img src="img/comparacion-antes-4.jpg" alt="" loading="lazy"><span class="comparacion-tag">04</span></div>
         </div>
-        <p class="comparacion-nota">El punto de partida de cualquier propiedad. Lo que sigue, pasa por acá.</p>
+        <div class="caja-info comparacion-caja" tabindex="0" role="button" aria-expanded="false">
+          <div class="caja-cab">
+            <h3>Empezar acá</h3>
+            <span class="caja-mas">+</span>
+          </div>
+          <p>El punto de partida de cualquier propiedad. Lo que sigue, pasa por acá.</p>
+        </div>
       </div>
 
       <!-- ================= 03 y 04 — NUESTRO VALOR =================
@@ -1686,10 +1686,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
               <span class="n">03</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
-                  <h3>¿Y si no me convence el resultado?</h3>
+                  <h3>¿Cómo es la comunicación durante el proceso?</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>Ajustamos cada entrega hasta que sea exactamente lo que tu propiedad merece. No la aprobás, no se publica.</p>
+                <p>Todo por WhatsApp — desde que enviás el material hasta la entrega final, con aviso de cada etapa. Un solo canal, sin cadenas de correos.</p>
               </div>
             </li>
             <li>
