@@ -1,14 +1,17 @@
 .DS_Store
 .claude/
 *.mp4
+!video/tour.mp4
 *.pdf
 *.png
 mockup-*.html
 schokstudio.html
 shock-template-*.html
 shock-tour/
-video/
+video/*
+!video/tour.mp4
 prompts pagina webs/
 pexels-*.jpg
 Minimalist*
 _fuente*
+instagram-grid/
