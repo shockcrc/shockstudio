@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<script>
+/* Se aplica ANTES de que llegue el <style> de más abajo: si el tema
+   guardado se leyera recién en el script del final del documento, la
+   página pintaría un instante en oscuro y después "saltaría" a claro —
+   el parpadeo clásico de FOUC. Acá arriba, sincrónico, no hay salto. */
+(function(){
+  try{
+    var t=localStorage.getItem('shock-tema');
+    if(t==='light') document.documentElement.setAttribute('data-theme','light');
+  }catch(_){}
+})();
+</script>
 
 <title>SHOCK — Diseño visual cinematográfico para hospedajes de lujo</title>
 <link rel="icon" type="image/png" href="img/leon-t.png">
@@ -91,16 +103,39 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
 
 <style>
-/* Paleta — 4 colores, hueso y petróleo (spec §3) */
+/* Paleta — 4 colores, hueso y petróleo (spec §3).
+   --ink-rgb / --paper-rgb existen para que las docenas de rgba(...) sueltos
+   en el resto de la hoja (textos silenciados, veladuras, hairlines) puedan
+   escribirse como rgba(var(--ink-rgb),X) en vez del hex fijo — así heredan
+   el tema claro solos, sin tocar cada regla a mano. */
 :root{
   --paper:#0D0B08;       /* negro cálido — fondo principal */
   --paper2:#1C1510;      /* superficie oscura — tarjetas y paneles */
   --ink:#F2EDE4;         /* blanco cálido — texto principal */
   --ink2:#8A8070;        /* secundario — texto muted */
-  --line:rgba(242,237,228,.14); /* hairline sobre oscuro */
+  --ink-rgb:242,237,228;
+  --paper-rgb:13,11,8;
+  --line:rgba(var(--ink-rgb),.14); /* hairline sobre oscuro */
   --accent:#C09A5A;      /* bronce luminoso — acento sobre fondo oscuro */
   --accent-deep:#9A7A3E; /* bronce oscuro — hover / detalle */
   --pad:6vw;
+}
+
+/* ===== TEMA CLARO =====
+   Cálido y con textura (crema/hueso, no blanco de papel): la marca es
+   "diseño visual de lujo", y un modo claro plano se lee como formulario,
+   no como estudio. --ink-rgb y --paper-rgb son los que hacen que todo lo
+   demás (textos silenciados, veladuras, hairlines, --line ya definida
+   arriba) siga funcionando sin reescribir cada regla — ver nota en :root. */
+:root[data-theme="light"]{
+  --paper:#F1EAD9;
+  --paper2:#E4D9C1;
+  --ink:#241C12;
+  --ink2:#6B5F4C;
+  --ink-rgb:36,28,18;
+  --paper-rgb:241,234,217;
+  --accent:#9A7A3E;
+  --accent-deep:#7C5E2E;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -126,7 +161,7 @@ html,button,a,input,textarea,select,label,*{cursor:none!important}
 .cursor-landing{position:fixed;top:0;left:0;width:46px;height:46px;
   margin:-23px 0 0 -23px;border-radius:50%;pointer-events:none;z-index:9999;
   display:flex;align-items:center;justify-content:center;gap:3px;
-  border:1px solid rgba(242,237,228,.28);background:rgba(242,237,228,.07);
+  border:1px solid rgba(var(--ink-rgb),.28);background:rgba(var(--ink-rgb),.07);
   backdrop-filter:blur(2px);opacity:0;mix-blend-mode:normal;
   transition:opacity .35s ease,background .18s,border-color .18s;
   will-change:transform}
@@ -174,7 +209,7 @@ html,button,a,input,textarea,select,label,*{cursor:none!important}
 
 /* ---------- NAVEGACIÓN ---------- */
 nav{position:fixed;top:0;left:0;width:100%;z-index:60;display:flex;justify-content:space-between;
-  align-items:center;padding:24px var(--pad);border-bottom:1px solid rgba(242,237,228,.12);
+  align-items:center;padding:24px var(--pad);border-bottom:1px solid rgba(var(--ink-rgb),.12);
   background:transparent;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 nav .logo-group{display:flex;align-items:center;gap:18px}
 nav .logo{font-family:'Fraunces',serif;font-weight:500;font-size:26px;letter-spacing:.2em;
@@ -210,16 +245,29 @@ nav .logo{font-family:'Fraunces',serif;font-weight:500;font-size:26px;letter-spa
 }
 nav .logo span{font-family:inherit;font-weight:inherit}
 nav .logo-social{display:flex;align-items:center;gap:12px;padding-left:16px;
-  border-left:1px solid rgba(242,237,228,.18)}
+  border-left:1px solid rgba(var(--ink-rgb),.18)}
 nav .logo-social a{color:var(--ink);opacity:.55;display:flex;
   transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
 nav .logo-social a:hover{opacity:1;color:var(--accent)}
 nav .logo-social svg{height:14px;width:auto;display:block}
 @media(max-width:700px){nav .logo-social{padding-left:12px;gap:10px}nav .logo-social svg{height:13px}}
+
+/* Selector de tema — mismo trato visual que los íconos sociales, pero sin
+   <a>: es una acción de la página, no un link externo. Se muestra un solo
+   ícono a la vez (el tema AL QUE SE CAMBIA si se hace clic, no el actual). */
+.theme-toggle{background:none;border:none;padding:0;cursor:pointer;
+  color:var(--ink);opacity:.55;display:flex;align-items:center;
+  transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
+.theme-toggle:hover{opacity:1;color:var(--accent)}
+.theme-toggle svg{height:15px;width:auto;display:block}
+.theme-toggle .theme-icon-luna{display:none}
+:root[data-theme="light"] .theme-toggle .theme-icon-sol{display:none}
+:root[data-theme="light"] .theme-toggle .theme-icon-luna{display:block}
+@media(max-width:700px){.theme-toggle svg{height:14px}}
 nav .links{display:flex;gap:14px;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase}
 nav .links a{display:inline-flex;align-items:center;justify-content:center;min-width:118px;
   color:var(--ink);text-decoration:none;background:transparent;
-  border:1px solid rgba(242,237,228,.18);padding:13px 26px;opacity:.85;
+  border:1px solid rgba(var(--ink-rgb),.18);padding:13px 26px;opacity:.85;
   transition:opacity .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1),background .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
 nav .links a:hover{opacity:1;color:var(--accent);border-color:var(--accent)}
 
@@ -239,7 +287,7 @@ nav .links a:hover{opacity:1;color:var(--accent);border-color:var(--accent)}
 @media(max-width:700px){
   .nav-toggle{display:flex}
   nav .links{display:flex;flex-direction:column;gap:0;position:absolute;top:100%;left:0;right:0;
-    z-index:59;background:var(--paper);border-bottom:1px solid rgba(242,237,228,.12);
+    z-index:59;background:var(--paper);border-bottom:1px solid rgba(var(--ink-rgb),.12);
     padding:6px var(--pad) 18px;
     transform:translateY(-8px);opacity:0;pointer-events:none;
     transition:transform .3s cubic-bezier(.22,.61,.36,1),opacity .3s cubic-bezier(.22,.61,.36,1)}
@@ -303,8 +351,16 @@ nav .links a:hover{opacity:1;color:var(--accent);border-color:var(--accent)}
    atardecer entero. Es preferible dejar que la foto conserve su color y
    poner el trabajo de legibilidad acá, que es una capa aparte. */
 .riel-fondo .velo{position:absolute;inset:0;background:
-  linear-gradient(180deg,rgba(13,11,8,.78) 0%,rgba(13,11,8,.58) 26%,
-    rgba(13,11,8,.58) 68%,rgba(13,11,8,.78) 100%)}
+  linear-gradient(180deg,rgba(var(--paper-rgb),.78) 0%,rgba(var(--paper-rgb),.58) 26%,
+    rgba(var(--paper-rgb),.58) 68%,rgba(var(--paper-rgb),.78) 100%)}
+/* La foto de fondo (fondo.jpg) es una escena nocturna — perfecta como
+   atmósfera oscura, pero un velo cálido pensado para tema oscuro no alcanza
+   para que en tema claro quede "tenue" en vez de "una foto oscura con una
+   nube encima". Se sube bastante la opacidad del velo, no la de la foto:
+   así conserva algo de textura/profundidad en vez de desaparecer del todo. */
+:root[data-theme="light"] .riel-fondo .velo{background:
+  linear-gradient(180deg,rgba(var(--paper-rgb),.94) 0%,rgba(var(--paper-rgb),.86) 26%,
+    rgba(var(--paper-rgb),.86) 68%,rgba(var(--paper-rgb),.94) 100%)}
 
 /* El riel propiamente dicho */
 /* Con el fondo transparente todo el texto del riel quedó flotando sobre un
@@ -316,10 +372,10 @@ nav .links a:hover{opacity:1;color:var(--accent);border-color:var(--accent)}
    basta declararlo una vez acá para que llegue a todo el texto del riel. */
 .riel{position:relative;z-index:2;height:100%;display:flex;align-items:center;
   width:max-content;padding:0 7vw;gap:5vw;will-change:transform;
-  text-shadow:0 1px 3px rgba(13,11,8,.6),0 2px 16px rgba(13,11,8,.45)}
+  text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-rgb),.45)}
 /* El nav vive fuera del riel (es 'fixed', no descendiente), así que necesita
    su propia declaración para el mismo efecto. */
-nav{text-shadow:0 1px 3px rgba(13,11,8,.6),0 2px 16px rgba(13,11,8,.45)}
+nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-rgb),.45)}
 /* Botones de fondo sólido: ya tienen su propio contraste resuelto por color,
    el halo ahí solo ensucia la letra. */
 .cta,.cta:hover{text-shadow:none}
@@ -333,7 +389,7 @@ nav{text-shadow:0 1px 3px rgba(13,11,8,.6),0 2px 16px rgba(13,11,8,.45)}
 .est .k{margin-bottom:3vh}
 .est h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(38px,6.4vw,104px);
   line-height:1.02;letter-spacing:-.02em}
-.est p{font-size:16.5px;line-height:1.85;color:rgba(242,237,228,.72);max-width:440px;margin-top:3vh}
+.est p{font-size:16.5px;line-height:1.85;color:rgba(var(--ink-rgb),.72);max-width:440px;margin-top:3vh}
 
 /* Numeral fantasma — profundidad editorial, no decorativo genérico */
 .est[data-num]::before{content:attr(data-num);position:absolute;top:-5vh;right:-1.5vw;
@@ -439,10 +495,10 @@ nav{text-shadow:0 1px 3px rgba(13,11,8,.6),0 2px 16px rgba(13,11,8,.45)}
 .est.lugar h2 em,.seccion-cab h2 em{font-style:normal;color:inherit;font-weight:inherit}
 .est.lugar .lugar-texto{grid-area:text;padding-left:0;margin-top:3vh}
 .est.lugar .lugar-texto p{max-width:420px;margin-top:0;font-size:clamp(19px,1.9vw,24px);
-  line-height:1.6;color:rgba(242,237,228,.72)}
+  line-height:1.6;color:rgba(var(--ink-rgb),.72)}
 .meta-tags{list-style:none;margin:3.4vh 0 0;padding:0;display:flex;flex-wrap:wrap;row-gap:1.8vh}
 .meta-tags li{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2);
-  padding:0 18px;border-left:1px solid rgba(242,237,228,.18)}
+  padding:0 18px;border-left:1px solid rgba(var(--ink-rgb),.18)}
 .meta-tags li:first-child{border-left:none;padding-left:0}
 .meta-tags li b{display:block;margin-top:8px;font-family:'Fraunces',serif;font-weight:400;
   font-size:19px;letter-spacing:0;text-transform:none;color:var(--ink)}
@@ -580,7 +636,7 @@ nav{text-shadow:0 1px 3px rgba(13,11,8,.6),0 2px 16px rgba(13,11,8,.45)}
 .plan-incluye{list-style:none;margin:.6vh 0 0;padding:0;display:flex;flex-direction:column;
   gap:1.2vh;max-width:46ch}
 .plan-incluye li{position:relative;padding-left:24px;font-size:14.5px;line-height:1.6;
-  color:rgba(242,237,228,.72)}
+  color:rgba(var(--ink-rgb),.72)}
 .plan-incluye li::before{content:'—';position:absolute;left:0;color:var(--accent)}
 .plan-acciones{display:flex;align-items:center;gap:30px;flex-wrap:wrap;margin-top:1vh}
 /* Sin prefijo de etiqueta: los botones de compra del catálogo son <button>
@@ -719,8 +775,8 @@ nav{text-shadow:0 1px 3px rgba(13,11,8,.6),0 2px 16px rgba(13,11,8,.45)}
 .regla .marcas span{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;opacity:.45;
   transition:opacity .45s cubic-bezier(.22,.61,.36,1)}
 .regla .marcas span.on{opacity:1}
-.regla .pista{position:relative;height:1px;background:rgba(255,255,255,.28);margin-top:10px}
-.regla .pista i{position:absolute;top:-3px;left:0;width:7px;height:7px;background:#fff;
+.regla .pista{position:relative;height:1px;background:rgba(var(--ink-rgb),.28);margin-top:10px}
+.regla .pista i{position:absolute;top:-3px;left:0;width:7px;height:7px;background:var(--ink);
   border-radius:50%;will-change:transform}
 @media(max-width:700px){.regla .marcas span:nth-child(even){display:none}}
 
@@ -735,7 +791,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .contacto-card{text-align:left;padding:0;border:none;display:flex;
   flex-direction:column;gap:2.8vh}
 .contacto-card .catalogo-title{margin-bottom:0}
-.contacto-lead{font-size:16px;line-height:1.8;color:rgba(242,237,228,.68);max-width:44ch;
+.contacto-lead{font-size:16px;line-height:1.8;color:rgba(var(--ink-rgb),.68);max-width:44ch;
   margin-top:-1.4vh}
 .contacto-datos{display:flex;flex-direction:column;align-items:flex-start;gap:1.4vh;
   font-size:15px}
@@ -777,7 +833,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   box-shadow:0 40px 90px -30px rgba(13,11,8,.9)}
 .panel-pago-caja h2{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(30px,4vw,52px);line-height:1.02;letter-spacing:-.02em;color:var(--ink)}
-.panel-pago-caja p{margin:0;font-size:15px;line-height:1.75;color:rgba(242,237,228,.72)}
+.panel-pago-caja p{margin:0;font-size:15px;line-height:1.75;color:rgba(var(--ink-rgb),.72)}
 .panel-pago-caja p b{font-weight:400;color:var(--ink)}
 .panel-pago-orden{display:flex;flex-direction:column;gap:.7vh;
   padding:1.8vh 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -847,11 +903,11 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
    hay algo para abrir. El texto vive oculto por defecto; se revela con
    :hover en mouse, y con la clase .abierta (toggle por click/tap/teclado)
    en touch — así funciona igual sin depender de que exista un puntero. */
-.caja-info{position:relative;border:1px solid var(--line);background:rgba(242,237,228,.04);
+.caja-info{position:relative;border:1px solid var(--line);background:rgba(var(--ink-rgb),.04);
   padding:1.6vh 1.4vw;cursor:pointer;-webkit-tap-highlight-color:transparent;
   transition:background .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1)}
 .caja-info.abierta,.caja-info:focus-visible{
-  background:rgba(242,237,228,.07);border-color:var(--accent)}
+  background:rgba(var(--ink-rgb),.07);border-color:var(--accent)}
 .caja-info .caja-cab{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
 .caja-info .caja-mas{font-family:'Fraunces',serif;font-weight:300;font-size:20px;
   color:var(--accent);line-height:1;flex:0 0 auto;
@@ -861,7 +917,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   transition:max-height .45s cubic-bezier(.22,.61,.36,1),opacity .3s ease,margin-top .35s cubic-bezier(.22,.61,.36,1)}
 .caja-info.abierta p{max-height:220px;opacity:1;margin-top:1.2vh}
 @media(hover:hover){
-  .caja-info:hover{background:rgba(242,237,228,.07);border-color:var(--accent)}
+  .caja-info:hover{background:rgba(var(--ink-rgb),.07);border-color:var(--accent)}
   .caja-info:hover .caja-mas{transform:rotate(135deg)}
   .caja-info:hover p{max-height:220px;opacity:1;margin-top:1.2vh}
 }
@@ -874,7 +930,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
      (.riel{align-items:center}), aparecen desniveladas entre sí al pasar
      de una a otra — el "salto" que se ve en el screenshot. */
   min-height:2.24em;display:flex;align-items:flex-start}
-.tri-item .caja-info p{font-size:16px;line-height:1.7;color:rgba(242,237,228,.72);max-width:36ch}
+.tri-item .caja-info p{font-size:16px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:36ch}
 
 /* ================================================================
    ESTACIÓN 04 — FICHAS (lo que ofrecemos)
@@ -895,7 +951,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   letter-spacing:.2em;color:var(--accent)}
 .fichas-lista .caja-info h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(21px,2.3vw,34px);line-height:1.1;letter-spacing:-.015em;color:var(--ink)}
-.fichas-lista .caja-info p{font-size:16px;line-height:1.7;color:rgba(242,237,228,.72);max-width:48ch}
+.fichas-lista .caja-info p{font-size:16px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:48ch}
 
 /* ================================================================
    ESTACIÓN 06 — PLANES (catálogo)
@@ -1006,7 +1062,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
    acá se sumaba a ese gap en vez de reemplazarlo, duplicando el aire
    antes de esta línea sin necesidad. */
 .planes-pie{padding-top:1.4vh;border-top:1px solid var(--line);
-  font-size:14px;line-height:1.7;color:rgba(242,237,228,.72);max-width:70ch}
+  font-size:14px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:70ch}
 .enlace-pie{font-family:inherit;font-size:inherit;background:transparent;border:none;
   padding:0;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--accent);
   transition:color .3s cubic-bezier(.22,.61,.36,1)}
@@ -1034,7 +1090,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   letter-spacing:.02em;color:var(--accent)}
 .proceso-paso h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(18px,1.7vw,22px);line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
-.proceso-paso p{margin:0;font-size:14px;line-height:1.7;color:rgba(242,237,228,.72)}
+.proceso-paso p{margin:0;font-size:14px;line-height:1.7;color:rgba(var(--ink-rgb),.72)}
 @media(max-width:1100px){
   .proceso-linea{grid-template-columns:1fr 1fr;row-gap:3.4vh}
   .proceso-linea::before{display:none}
@@ -1230,7 +1286,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
     line-height:1.65!important;
     max-width:none!important;
     margin-bottom:2vh!important;
-    color:rgba(242,237,228,.62)!important;
+    color:rgba(var(--ink-rgb),.62)!important;
   }
   /* CTA ancho completo */
   .banda-accion{
@@ -1350,6 +1406,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
       <a data-wa-enlace href="#" aria-label="WhatsApp">
         <svg viewBox="0 0 448 512" fill="currentColor"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224-99.6 224-222 0-59.3-25.2-115-67-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
       </a>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-label="Cambiar a tema claro">
+        <svg class="theme-icon-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+        <svg class="theme-icon-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2z"/></svg>
+      </button>
     </div>
   </div>
   <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Abrir menú">
@@ -1654,7 +1714,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                   <h3>¿Necesito equipo profesional?</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>No se requiere equipo profesional. El material se produce a partir de fotografías tomadas por el propio cliente con su teléfono celular, siguiendo una guía sencilla de ángulos e iluminación proporcionada previamente. Todo el trabajo de cámara, movimiento y producción cinematográfica se realiza mediante tecnología especializada.</p>
+                <p>No se requiere equipo profesional. El material se produce a partir de fotografías tomadas por el propio cliente, siguiendo una guía sencilla de ángulos e iluminación proporcionada previamente. Todo el trabajo de cámara, movimiento y producción cinematográfica se realiza mediante tecnología especializada.</p>
               </div>
             </li>
             <li>
@@ -1664,7 +1724,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                   <h3>¿Cómo es la comunicación durante el proceso?</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>La comunicación se mantiene de forma directa por WhatsApp durante todo el proceso. Se confirma la recepción del material, se notifica cuando el video está listo para revisión dentro de las 72 horas establecidas, y los ajustes se coordinan por el mismo canal.</p>
+                <p>Hay comunicación directa por WhatsApp durante todo el proceso, desde el primer contacto hasta la entrega final.</p>
               </div>
             </li>
             <li>
@@ -1805,6 +1865,32 @@ const esMovil=false;
 if(!((performance.getEntriesByType('navigation')[0]||{}).type==='back_forward')){
   window.scrollTo(0,0);
 }
+
+/* Selector de tema. El estado inicial ya lo puso el script chico en <head>
+   (sin eso, FOUC); acá solo falta reaccionar al clic y guardar la
+   preferencia. El meta 'theme-color' también se actualiza — es lo que
+   pinta la barra del navegador en móvil, y dejarlo clavado en negro se
+   nota si el resto de la pantalla pasó a claro. */
+(function(){
+  const boton=document.getElementById('themeToggle');
+  const metaColor=document.querySelector('meta[name="theme-color"]');
+  if(!boton) return;
+  boton.addEventListener('click',()=>{
+    const raiz=document.documentElement;
+    const esClaro=raiz.getAttribute('data-theme')==='light';
+    if(esClaro){
+      raiz.removeAttribute('data-theme');
+      try{ localStorage.setItem('shock-tema','dark'); }catch(_){}
+      if(metaColor) metaColor.setAttribute('content','#0D0B08');
+    }else{
+      raiz.setAttribute('data-theme','light');
+      try{ localStorage.setItem('shock-tema','light'); }catch(_){}
+      if(metaColor) metaColor.setAttribute('content','#F1EAD9');
+    }
+  });
+  if(raizEsClara()) metaColor && metaColor.setAttribute('content','#F1EAD9');
+  function raizEsClara(){ return document.documentElement.getAttribute('data-theme')==='light'; }
+})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
