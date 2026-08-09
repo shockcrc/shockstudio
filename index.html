@@ -1940,12 +1940,10 @@ if(!reduced && window.gsap && window.ScrollTrigger){
   if(window.Lenis){
     lenis=esTouch
       ? new Lenis({
-          duration:0.9,
-          easing:t=>1-Math.pow(1-t,3),
           syncTouch:true,
-          syncTouchLerp:0.15,
-          touchInertiaMultiplier:14,
-          touchMultiplier:1
+          syncTouchLerp:0.075,
+          touchInertiaMultiplier:20,
+          touchMultiplier:1.2
         })
       : new Lenis({duration:1.1,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
     lenis.on('scroll',ScrollTrigger.update);
