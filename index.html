@@ -1179,14 +1179,16 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   .est[data-num]::before{font-size:clamp(90px,26vw,220px);top:-3vh;right:-1vw}
   .est{will-change:auto}
   /* === RIEL MÓVIL: scroll vertical libre === */
-  /* overscroll-behor-y:contain es clave y no es cosmético: sin esto, un
-     arrastre sostenido adentro de una demo (el gesto de "explorar" el
-     video) puede hacer rebotar el SCROLL DE LA PÁGINA hasta su tope, y
-     ese rebote dispara el pull-to-refresh nativo del navegador — la
-     página entera se recarga sola, a mitad de ver una demo. contain no
-     afecta al scroll libre normal, solo evita que el rebote se escape
-     hacia el navegador. */
-  html{scroll-snap-type:none;scroll-padding-top:0;overscroll-behavior-y:contain}
+  /* overscroll-behavior-y:none (antes 'contain') es clave y no es cosmético:
+     'contain' bloqueaba que el rebote se escapara hacia el navegador (pull-
+     to-refresh), pero seguía permitiendo el rebote elástico LOCAL en los
+     extremos — y ese rebote nativo peleaba con Lenis (que ya clampea el
+     scroll por su cuenta), así que al llegar abajo del todo y volver a
+     subir se veía un salto: un instante en la posición "cruda" del rebote
+     nativo antes de que Lenis la corrigiera. 'none' mata el rebote nativo
+     por completo (y de paso también evita el pull-to-refresh, más fuerte
+     que 'contain'), dejando a Lenis como única autoridad en los bordes. */
+  html{scroll-snap-type:none;scroll-padding-top:0;overscroll-behavior-y:none}
   .riel-wrap{height:auto}
   .riel-sticky{position:relative!important;top:auto!important;
     height:auto;overflow:visible}
@@ -1525,7 +1527,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <p class="valor-intro-h">Convertimos tu propiedad en un recorrido cinematográfico continuo, a partir de material existente. Como el que se muestra a continuación.</p>
           <span class="valor-intro-dato">La demo muestra el resultado del servicio: el recorrido de la propiedad se produce a partir del material que envía el cliente.</span>
         </div>
-        <div class="triptico-grid">
+        <div class="triptico-grid" data-lenis-prevent>
           <div class="tri-item">
             <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
                  Bóveda, que el visitante mueve él mismo. Sin data-clip a
@@ -1574,7 +1576,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <h2 class="serif">Nuestro <em>valor</em></h2>
           <span class="contador">Razones 03 — 04</span>
         </div>
-        <div class="triptico-grid">
+        <div class="triptico-grid" data-lenis-prevent>
           <div class="tri-item">
             <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
                  Bóveda, que el visitante mueve él mismo. Sin data-clip a
@@ -1773,7 +1775,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <h2 class="serif">Planes</h2>
           <span class="contador">Tres niveles</span>
         </div>
-        <div class="planes-grid">
+        <div class="planes-grid" data-lenis-prevent>
           <!-- La escalera de planes: los TRES entregables son siempre los
                mismos (video cinematográfico completo, tomas sueltas por
                espacio, formato vertical para reels — la estación "Qué
@@ -1938,11 +1940,11 @@ if(!reduced && window.gsap && window.ScrollTrigger){
   if(window.Lenis){
     lenis=esTouch
       ? new Lenis({
-          duration:1.35,
-          easing:t=>1-Math.pow(1-t,4),
+          duration:0.9,
+          easing:t=>1-Math.pow(1-t,3),
           syncTouch:true,
-          syncTouchLerp:0.055,
-          touchInertiaMultiplier:28,
+          syncTouchLerp:0.15,
+          touchInertiaMultiplier:14,
           touchMultiplier:1
         })
       : new Lenis({duration:1.1,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
@@ -2025,8 +2027,13 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       window.scrollTo(0,scrollGuardado);
       /* Lenis guarda su propio valor de scroll objetivo; sin re-sincronizarlo
          acá, al reanudar (lenis.start) intentaría "arrastrar" la página de
-         vuelta hacia donde se había quedado antes del bloqueo. */
-      if(lenis){ lenis.scrollTo(scrollGuardado,{immediate:true}); lenis.start(); }
+         vuelta hacia donde se había quedado antes del bloqueo. OJO:
+         scrollTo() se ignora en silencio mientras isStopped es true (ver
+         el guard interno de Lenis) — sin force:true este resync no hacía
+         nada, y al hacer start() Lenis tiraba de la página hacia su
+         posición vieja. Eso era el "se traba y se pone mal" al pasar por
+         las demos. */
+      if(lenis){ lenis.scrollTo(scrollGuardado,{immediate:true,force:true}); lenis.start(); }
     };
 
     /* postMessage de muestras → avanzar a siguiente estación */
