@@ -7,11 +7,18 @@
 /* Se aplica ANTES de que llegue el <style> de más abajo: si el tema
    guardado se leyera recién en el script del final del documento, la
    página pintaría un instante en oscuro y después "saltaría" a claro —
-   el parpadeo clásico de FOUC. Acá arriba, sincrónico, no hay salto. */
+   el parpadeo clásico de FOUC. Acá arriba, sincrónico, no hay salto.
+
+   En celular el claro es el default (a pedido) — se pinta oscuro solo si
+   el visitante ya lo eligió a mano antes (guardado como 'dark'). En
+   escritorio no importa qué se guarde: el CSS del tema claro vive dentro
+   de un media query de celular, así que ahí siempre se ve oscuro. */
 (function(){
   try{
     var t=localStorage.getItem('shock-tema');
-    if(t==='light') document.documentElement.setAttribute('data-theme','light');
+    var esMovil=matchMedia('(max-width:820px)').matches;
+    var claro=esMovil ? (t!=='dark') : (t==='light');
+    if(claro) document.documentElement.setAttribute('data-theme','light');
   }catch(_){}
 })();
 </script>
@@ -257,7 +264,7 @@ nav .logo-social a{color:var(--ink);opacity:.55;display:flex;
   transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
 nav .logo-social a:hover{opacity:1;color:var(--accent)}
 nav .logo-social svg{height:14px;width:auto;display:block}
-@media(max-width:700px){nav .logo-social{padding-left:12px;gap:10px}nav .logo-social svg{height:13px}}
+@media(max-width:700px){nav .logo-social{padding-left:12px;gap:16px}nav .logo-social svg{height:22px}}
 
 /* Selector de tema — mismo trato visual que los íconos sociales, pero sin
    <a>: es una acción de la página, no un link externo. Se muestra un solo
@@ -276,7 +283,7 @@ nav .logo-social svg{height:14px;width:auto;display:block}
   :root[data-theme="light"] .theme-toggle .theme-icon-sol{display:none}
   :root[data-theme="light"] .theme-toggle .theme-icon-luna{display:block}
 }
-@media(max-width:700px){.theme-toggle svg{height:14px}}
+@media(max-width:700px){.theme-toggle svg{height:22px}}
 nav .links{display:flex;gap:14px;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase}
 nav .links a{display:inline-flex;align-items:center;justify-content:center;min-width:118px;
   color:var(--ink);text-decoration:none;background:transparent;
