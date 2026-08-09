@@ -1926,12 +1926,26 @@ if(!reduced && window.gsap && window.ScrollTrigger){
   ScrollTrigger.config({ignoreMobileResize:true});
 
   /* ===== FLUIDEZ — Lenis sincronizado con el ticker de GSAP =====
-     En touch el scroll nativo ya es fluido; Lenis encima lo traba.
-     Solo se activa con puntero fino (mouse/trackpad). */
+     El scroll vertical en móvil NO tiene scroll-snap (ver 'html' dentro de
+     @media(max-width:820px) en el CSS: scroll-snap-type:none a propósito) —
+     es scroll libre, así que Lenis puede tomarlo sin pelear con ningún
+     snap nativo. En touch se activa syncTouch para que el dedo ya no
+     mueva la página 1:1: arrastra un valor objetivo y la página lo
+     persigue con un lerp lento (el "atraso" premium pedido), en vez del
+     fling nativo instantáneo. */
   let lenis=null;
   const esTouch=matchMedia('(pointer:coarse)').matches;
-  if(window.Lenis && !esTouch){
-    lenis=new Lenis({duration:1.1,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
+  if(window.Lenis){
+    lenis=esTouch
+      ? new Lenis({
+          duration:1.35,
+          easing:t=>1-Math.pow(1-t,4),
+          syncTouch:true,
+          syncTouchLerp:0.055,
+          touchInertiaMultiplier:28,
+          touchMultiplier:1
+        })
+      : new Lenis({duration:1.1,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
     lenis.on('scroll',ScrollTrigger.update);
     gsap.ticker.add(t=>lenis.raf(t*1000));
     gsap.ticker.lagSmoothing(0);
@@ -1948,9 +1962,8 @@ if(!reduced && window.gsap && window.ScrollTrigger){
   const cinta=document.getElementById('cinta');
 
   if(esTouch){
-    /* ===== MÓVIL: scroll vertical con snap =====
-       html tiene scroll-snap-type:y mandatory (declarado en CSS).
-       El fondo queda fixed por CSS. */
+    /* ===== MÓVIL: scroll vertical libre, con Lenis dándole la inercia
+       lenta (ver bloque de arriba). El fondo queda fixed por CSS. */
     const paneles=Array.from(document.querySelectorAll('[data-est-panel]'));
     const marcas=Array.from(document.querySelectorAll('#marcas [data-est]'));
     const pista=document.querySelector('.regla .pista');
@@ -1975,7 +1988,8 @@ if(!reduced && window.gsap && window.ScrollTrigger){
         const est=document.querySelector(enlace.dataset.ir);
         if(!est) return;
         ev.preventDefault();
-        window.scrollTo({top:est.offsetTop,behavior:'smooth'});
+        if(lenis) lenis.scrollTo(est.offsetTop,{duration:1.4});
+        else window.scrollTo({top:est.offsetTop,behavior:'smooth'});
       });
     });
 
@@ -1995,6 +2009,7 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       if(scrollBloqueado) return;
       scrollBloqueado=true;
       scrollGuardado=window.scrollY;
+      if(lenis) lenis.stop();
       document.body.style.position='fixed';
       document.body.style.top=(-scrollGuardado)+'px';
       document.body.style.left='0';
@@ -2008,6 +2023,10 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       document.body.style.left='';
       document.body.style.right='';
       window.scrollTo(0,scrollGuardado);
+      /* Lenis guarda su propio valor de scroll objetivo; sin re-sincronizarlo
+         acá, al reanudar (lenis.start) intentaría "arrastrar" la página de
+         vuelta hacia donde se había quedado antes del bloqueo. */
+      if(lenis){ lenis.scrollTo(scrollGuardado,{immediate:true}); lenis.start(); }
     };
 
     /* postMessage de muestras → avanzar a siguiente estación */
@@ -2029,7 +2048,8 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       if(!estActual) return;
       const siguiente=paneles[paneles.indexOf(estActual)+1];
       if(!siguiente) return;
-      window.scrollTo({top:siguiente.offsetTop,behavior:'smooth'});
+      if(lenis) lenis.scrollTo(siguiente.offsetTop,{duration:1.4});
+      else window.scrollTo({top:siguiente.offsetTop,behavior:'smooth'});
     });
 
   } else {
