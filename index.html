@@ -538,28 +538,14 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
    teléfono: se vería un demo que no es el que se vende. Escalando, conserva
    la maqueta de escritorio. El alto se calcula por script, porque depende
    de la escala. */
-/* Fondo del hueco ANTES de que el iframe cargue (o si tarda): antes era un
-   marrón casi negro (#14100D) a pantalla completa, y con el velo apenas
-   tintado encima (5% de opacidad) eso es lo que se veía — un cuadro negro
-   con un botón. Ahora usa la misma foto desenfocada del fondo del sitio
-   (img/fondo.jpg), así el hueco se lee como parte de la portada mientras
-   espera, no como un hueco roto. */
+/* Fondo del hueco ANTES de que el iframe cargue (o si tarda) — y portada
+   fija de las 4 muestras. Antes cada una tenía su propia foto de la
+   propiedad (Casa Bóveda); ahora todas comparten una sola portada de
+   marca (escudo dorado sobre negro, img/demo-poster.jpg) para que la
+   miniatura comunique "esto es SHOCK mostrando su trabajo", no una
+   propiedad específica. */
 .demo-vivo{position:relative;overflow:hidden;background:#14100D;
-  background-image:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/fondo.jpg');
-  background-size:cover;background-position:center}
-/* Portadas propias para las muestras "Optimizar recursos" (parte-3) y
-   "Ahorrar tiempo" (parte-4): mismo estudio, otro rincón de la propiedad
-   (interior y jardín/piscina), para que no se vean como el mismo
-   fotograma repetido. Solo pisan el background-image de ESTAS dos
-   tarjetas — el resto de .demo-vivo (la demo grande, parte-1, parte-2)
-   sigue usando img/fondo.jpg sin tocar. */
-.clip.demo-poster-1{background:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/demo-parte1.jpg');
-  background-size:cover;background-position:center}
-.clip.demo-poster-2{background:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/demo-parte2.jpg');
-  background-size:cover;background-position:center}
-.clip.demo-poster-3{background:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/demo-parte3.jpg');
-  background-size:cover;background-position:center}
-.clip.demo-poster-4{background:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/demo-parte4.jpg');
+  background-image:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/demo-poster.jpg');
   background-size:cover;background-position:center}
 .demo-vivo iframe{position:absolute;top:0;left:0;width:1280px;border:0;display:block;
   transform-origin:top left;opacity:0;transition:opacity 1s cubic-bezier(.22,.61,.36,1);
@@ -1760,6 +1746,16 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                   <span class="caja-mas">+</span>
                 </div>
                 <p>El pago se realiza en dos partes: un 50% al iniciar el proyecto y el 50% restante contra la entrega final. Se aceptan múltiples métodos de pago para mayor comodidad del cliente.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">04</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>¿Qué recibo al final?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Todo se entrega por enlace de descarga (Google Drive): el video completo, las tomas sueltas por espacio y los reels, ya organizados y listos para publicar.</p>
               </div>
             </li>
           </ul>
