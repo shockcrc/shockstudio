@@ -1,0 +1,2759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<script>
+/* Se aplica ANTES de que llegue el <style> de más abajo: si el tema
+   guardado se leyera recién en el script del final del documento, la
+   página pintaría un instante en oscuro y después "saltaría" a claro —
+   el parpadeo clásico de FOUC. Acá arriba, sincrónico, no hay salto.
+
+   En celular el claro es el default (a pedido) — se pinta oscuro solo si
+   el visitante ya lo eligió a mano antes (guardado como 'dark'). En
+   escritorio no importa qué se guarde: el CSS del tema claro vive dentro
+   de un media query de celular, así que ahí siempre se ve oscuro. */
+(function(){
+  try{
+    var t=localStorage.getItem('shock-tema');
+    var esMovil=matchMedia('(max-width:820px)').matches;
+    var claro=esMovil ? (t!=='dark') : (t==='light');
+    if(claro) document.documentElement.setAttribute('data-theme','light');
+  }catch(_){}
+})();
+</script>
+
+<title>SHOCK — Diseño visual cinematográfico para hospedajes de lujo</title>
+<link rel="icon" type="image/png" href="img/leon-t.png">
+<meta name="description" content="Tu hospedaje merece más que una página web. Paquetes de video cinematográfico que posicionan tu propiedad de lujo en Costa Rica. Desde $125.">
+<meta property="og:title" content="SHOCK — Tu hospedaje merece más que una página web">
+<meta property="og:description" content="Diseño visual cinematográfico para propiedades de lujo en Costa Rica.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://shockstudio.cc">
+<meta property="og:site_name" content="SHOCK">
+<meta name="theme-color" content="#0D0B08">
+<link rel="canonical" href="https://shockstudio.cc">
+
+<!-- ================================================================
+     SHOCK — Plantilla 16 · TRAVELLING
+     Esqueleto para sitio cinematográfico con FONDO DE VIDEO HIGGSFIELD.
+     Idea central: el sitio NO baja. El scroll vertical mueve la página de
+     izquierda a derecha, como un travelling lateral, y el video de fondo
+     acompaña a menor velocidad (parallax real de dos planos). No es una
+     sección horizontal dentro de una página vertical: es el sitio entero
+     montado sobre un riel.
+
+       · riel: 6 estaciones recorridas con el scroll, CADA UNA CON SU PROPIO
+         LAYOUT — esa es la regla del sitio. Antes eran 13 y once de ellas
+         compartían la misma plantilla (etiqueta + título + caja "Ver más"):
+         el recorrido entero se leía como la misma diapositiva repetida.
+       · el material visual carga el peso; el texto acompaña. Nada de bloques
+         de párrafo escondidos detrás de una capa de "Ver más" (eliminada).
+       · regla fija abajo con las estaciones y la posición actual
+       · cierre: la última estación es el llamado, sobre el video limpio
+
+     ---------------- LAS 6 ESTACIONES ----------------
+     ---------------- VENTA ----------------
+     La landing cobra: los botones del catálogo disparan un checkout que vive
+     al final del documento, en un bloque con un objeto CONFIG donde está TODO
+     lo configurable — WhatsApp, correo, y un enlace de pago por plan. Sin
+     enlaces cargados, cada plan cae a WhatsApp con el pedido ya redactado, así
+     que el sitio vende desde el día uno y conectar el procesador después es
+     pegar cuatro URLs. Leer el comentario de ese bloque antes de tocarlo.
+     ----------------------------------------------------
+
+       01 portada       titular a dos líneas + banda de 2 columnas
+       02 lugar         texto a la izquierda, clip protagonista a la derecha
+       03 diferencial 1 dos de los 4 diferenciales, cada uno con su clip
+       04 diferencial 2 los otros dos diferenciales — separado de 03 para que
+                        el título nunca compita en alto con las tarjetas
+       05 fichas        clip vertical grande + índice numerado de 3 puntos
+       06 planes        los 3 niveles en columnas comparables
+
+       (Se quitó la estación de mosaico — grilla de 4 clips sueltos entre el
+       tríptico y las fichas — para aligerar el recorrido.)
+
+     ---------------- MEDIA ----------------
+     Dos cosas distintas, no confundirlas:
+
+     1) FONDO (img/fondo.jpg 1600px + img/fondo-movil.jpg 900px). Una FOTO,
+        ya no un video: antes eran dos mp4 cuyos fotogramas se dibujaban en
+        un canvas según el scroll, y todo ese motor se eliminó con el cambio.
+        El movimiento no dependía del video sino de la cinta, que sigue
+        viajando más lento que el riel.
+
+        Va siempre muy desenfocada y aclarada — no es un efecto, es lo que
+        deja legible la tipografía oscura encima (ver .fondo-foto). Por eso
+        mismo los archivos pueden ir chicos y muy comprimidos: a 26px de blur
+        no se distingue un JPG de 137 KB de uno de 5 MB. Para cambiar la foto,
+        regenerar ambos tamaños desde el original.
+
+        Encuadre: ancho, sin sujeto central ni zonas de detalle fuerte donde
+        cae el titular. Si la foto nueva es más oscura que esta, hay que subir
+        el brightness del filtro y la opacidad del .velo, no bajar el texto.
+
+     2) CLIPS DEL CONTENIDO (video/clip-01.mp4 … clip-06.mp4). Seis huecos.
+        Mudos, 3-8 s, en loop, corte limpio para que el ciclo no dé un salto.
+        Se cargan y se reproducen solo cerca de cuadro (ver script al final).
+        Se puede repetir el mismo archivo en varios huecos mientras se produce
+        el material — y si un archivo no existe, su hueco se queda con el
+        degradado oscuro y su rótulo, que es exactamente el marcador de
+        maqueta: no se rompe nada.
+     ----------------------------------------------------
+
+     Reemplazar: nombre, textos entre [corchetes], rutas de media y los
+     4 valores de :root. El motor de scroll NO cambia entre proyectos.
+     ================================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+
+<style>
+/* Paleta — 4 colores, hueso y petróleo (spec §3).
+   --ink-rgb / --paper-rgb existen para que las docenas de rgba(...) sueltos
+   en el resto de la hoja (textos silenciados, veladuras, hairlines) puedan
+   escribirse como rgba(var(--ink-rgb),X) en vez del hex fijo — así heredan
+   el tema claro solos, sin tocar cada regla a mano. */
+:root{
+  --paper:#0D0B08;       /* negro cálido — fondo principal */
+  --paper2:#1C1510;      /* superficie oscura — tarjetas y paneles */
+  --ink:#F2EDE4;         /* blanco cálido — texto principal */
+  --ink2:#8A8070;        /* secundario — texto muted */
+  --ink-rgb:242,237,228;
+  --paper-rgb:13,11,8;
+  --line:rgba(var(--ink-rgb),.14); /* hairline sobre oscuro */
+  --accent:#C09A5A;      /* bronce luminoso — acento sobre fondo oscuro */
+  --accent-deep:#9A7A3E; /* bronce oscuro — hover / detalle */
+  --pad:6vw;
+}
+
+/* ===== TEMA CLARO — SOLO CELULAR =====
+   Cálido y con textura (crema/hueso, no blanco de papel): la marca es
+   "diseño visual de lujo", y un modo claro plano se lee como formulario,
+   no como estudio. --ink-rgb y --paper-rgb son los que hacen que todo lo
+   demás (textos silenciados, veladuras, hairlines, --line ya definida
+   arriba) siga funcionando sin reescribir cada regla — ver nota en :root.
+
+   A pedido, el claro queda disponible solo en pantallas angostas: en
+   escritorio el sitio se queda siempre en oscuro, sin importar lo que haya
+   guardado en localStorage. Por eso todo el bloque vive dentro de este
+   media query en vez de en el selector solo. */
+@media(max-width:820px){
+  :root[data-theme="light"]{
+    --paper:#F1EAD9;
+    --paper2:#E4D9C1;
+    --ink:#241C12;
+    --ink2:#6B5F4C;
+    --ink-rgb:36,28,18;
+    --paper-rgb:241,234,217;
+    --accent:#9A7A3E;
+    --accent-deep:#7C5E2E;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}
+html{scroll-behavior:auto}
+body{background:var(--paper);color:var(--ink);font-family:'Jost',sans-serif;font-weight:400;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+
+/* ---- CURSOR A MEDIDA (toda la landing) ----
+   El mismo cursor que usan las muestras de demo-detalle.html, ahora
+   también afuera, en toda la página: un círculo con dos flechitas
+   arriba/abajo que sigue al mouse, en vez del puntero nativo del
+   sistema. Solo se activa con puntero fino (mouse real) — ver el JS al
+   final del body — así que en touch la página se comporta igual que
+   siempre. cursor:none va en html, no en body, para que también tape
+   el cursor nativo sobre iframes y demás elementos de scroll. El
+   !important es necesario porque botones, links e inputs traen su
+   propio cursor (pointer, text) declarado con más especificidad que un
+   simple `html{cursor:none}` — sin el !important, pasar por encima de
+   un botón o un campo de texto hacía reaparecer la manito o la barra
+   nativas y el cursor propio se sentía inconsistente. */
+html,button,a,input,textarea,select,label,*{cursor:none!important}
+.cursor-landing{position:fixed;top:0;left:0;width:46px;height:46px;
+  margin:-23px 0 0 -23px;border-radius:50%;pointer-events:none;z-index:9999;
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  border:1px solid rgba(var(--ink-rgb),.28);background:rgba(var(--ink-rgb),.07);
+  backdrop-filter:blur(2px);opacity:0;mix-blend-mode:normal;
+  transition:opacity .35s ease,background .18s,border-color .18s;
+  will-change:transform}
+.cursor-landing.visible{opacity:1}
+.cursor-landing.arrastrando{background:rgba(156,122,76,.18);border-color:var(--accent)}
+.cursor-landing.arrastrando i{transform:scale(.9)}
+.cursor-landing i{display:block;width:0;height:0;
+  border-left:4px solid transparent;border-right:4px solid transparent;opacity:.85}
+.cursor-landing i.arriba{border-bottom:6px solid var(--ink)}
+.cursor-landing i.abajo{border-top:6px solid var(--ink)}
+/* pointer:coarse solo detecta touch REAL. Si alguien mira el sitio en la
+   compu con la ventana angosta (formato celular, pero con mouse de
+   verdad), pointer sigue siendo 'fine' y el cursor a medida se quedaba
+   prendido — ahí es donde trababa las cajas de texto (el cursor:none
+   global les gana a los estados de hover/click nativos que ese modo
+   angosto necesita). Por eso también se apaga por ANCHO, con el mismo
+   corte de 820px que usa el resto del sitio para pasar a maqueta de
+   celular — no solo por tipo de puntero. */
+@media(pointer:coarse),(max-width:820px){
+  html,button,a,input,textarea,select,label,*{cursor:auto!important}
+  .cursor-landing{display:none}
+}
+
+/* Marcas de esquina — motivo técnico/estudio, no editorial. Fijas en el
+   viewport, marcan el encuadre como si fuera una mira de cámara/monitor. */
+.marcas-esquina{position:fixed;inset:0;z-index:52;pointer-events:none}
+.marcas-esquina i{position:absolute;width:15px;height:15px}
+.marcas-esquina i::before,.marcas-esquina i::after{content:'';position:absolute;background:var(--ink);opacity:.55}
+.marcas-esquina i::before{width:100%;height:1px;top:0;left:0}
+.marcas-esquina i::after{width:1px;height:100%;top:0;left:0}
+.marcas-esquina i.tl{top:20px;left:20px}
+.marcas-esquina i.tr{top:20px;right:20px;transform:scaleX(-1)}
+.marcas-esquina i.bl{bottom:20px;left:20px;transform:scaleY(-1)}
+.marcas-esquina i.br{bottom:20px;right:20px;transform:scale(-1,-1)}
+@media(max-width:700px){.marcas-esquina{display:none}}
+.serif{font-family:'Fraunces',serif;font-optical-sizing:auto;font-weight:400}
+.k{font-size:12.5px;letter-spacing:.4em;text-transform:uppercase;color:var(--ink);opacity:.6}
+.k .idx{color:var(--accent);margin-right:14px;opacity:1}
+.k.caja-negra{display:inline-block;opacity:1;color:var(--ink);background:var(--paper2);
+  padding:22px 48px;font-size:12.5px;letter-spacing:.32em;text-transform:uppercase;
+  border:1px solid var(--ink);transition:background .4s cubic-bezier(.22,.61,.36,1),color .4s cubic-bezier(.22,.61,.36,1)}
+.k.caja-negra:hover{background:var(--ink);color:var(--paper2)}
+.k.caja-negra .idx{color:var(--accent);opacity:.85}
+.k.caja-negra:hover .idx{color:var(--paper2);opacity:.7}
+
+/* ---------- NAVEGACIÓN ---------- */
+nav{position:fixed;top:0;left:0;width:100%;z-index:60;display:flex;justify-content:space-between;
+  align-items:center;padding:24px var(--pad);border-bottom:1px solid rgba(var(--ink-rgb),.12);
+  background:transparent;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+nav .logo-group{display:flex;align-items:center;gap:18px}
+nav .logo{font-family:'Fraunces',serif;font-weight:500;font-size:26px;letter-spacing:.2em;
+  color:var(--ink)}
+/* En celular el titular grande de la portada YA dice "SHOCK" — mostrarlo
+   también acá arriba es la misma palabra dos veces en la primera pantalla.
+   Se oculta mientras el visitante sigue en la portada (estación 01) y
+   aparece con un fundido apenas avanza a la estación 02 (ver el toggle de
+   'mostrar-logo' en el JS del riel, sección táctil). En escritorio no
+   aplica: ahí el nav flota sobre el riel horizontal y nunca compite con el
+   titular de la misma forma. */
+@media(max-width:820px){
+  nav .logo{opacity:0;transition:opacity .5s cubic-bezier(.22,.61,.36,1)}
+  nav.mostrar-logo .logo{opacity:1}
+  /* Con el titular invisible en la portada, el separador y los íconos
+     sociales quedaban solos y chicos contra un hueco vacío a la
+     izquierda. Mientras el titular no aparece, se agrandan los íconos y
+     se saca el separador (ya no hay nada de qué separarlos) — al llegar
+     'mostrar-logo' vuelven a su tamaño normal, junto con el fundido del
+     titular. */
+  nav .logo-social{transition:gap .5s cubic-bezier(.22,.61,.36,1),
+    padding-left .5s cubic-bezier(.22,.61,.36,1),border-color .5s ease}
+  nav .logo-social svg{transition:height .5s cubic-bezier(.22,.61,.36,1)}
+  nav:not(.mostrar-logo) .logo-social{gap:18px;padding-left:0;border-left-color:transparent}
+  nav:not(.mostrar-logo) .logo-social svg{height:19px}
+  /* El titular invisible sigue reservando su ancho de todos modos (opacity,
+     no display:none), y eso corría a los íconos hacia el centro por
+     accidente. Se saca ese hueco fantasma para que los íconos queden
+     pegados al borde izquierdo, en el lugar exacto donde iría la
+     palabra — no centrados. */
+  nav:not(.mostrar-logo) .logo{position:absolute;width:0;overflow:hidden;white-space:nowrap}
+  nav:not(.mostrar-logo) .logo-group{position:relative}
+}
+nav .logo span{font-family:inherit;font-weight:inherit}
+nav .logo-social{display:flex;align-items:center;gap:12px;padding-left:16px;
+  border-left:1px solid rgba(var(--ink-rgb),.18)}
+nav .logo-social a{color:var(--ink);opacity:.55;display:flex;
+  transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
+nav .logo-social a:hover{opacity:1;color:var(--accent)}
+nav .logo-social svg{height:14px;width:auto;display:block}
+@media(max-width:700px){nav .logo-social{padding-left:12px;gap:16px}nav .logo-social svg{height:22px}}
+
+/* Selector de tema — mismo trato visual que los íconos sociales, pero sin
+   <a>: es una acción de la página, no un link externo. Se muestra un solo
+   ícono a la vez (el tema AL QUE SE CAMBIA si se hace clic, no el actual).
+   Oculto en escritorio a propósito: el tema claro es solo para celular
+   (ver el media query de la paleta más arriba), así que el botón no tiene
+   nada que hacer ahí. */
+.theme-toggle{display:none;background:none;border:none;padding:0;cursor:pointer;
+  color:var(--ink);opacity:.55;align-items:center;
+  transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
+.theme-toggle:hover{opacity:1;color:var(--accent)}
+.theme-toggle svg{height:15px;width:auto;display:block}
+.theme-toggle .theme-icon-luna{display:none}
+@media(max-width:820px){
+  .theme-toggle{display:flex}
+  :root[data-theme="light"] .theme-toggle .theme-icon-sol{display:none}
+  :root[data-theme="light"] .theme-toggle .theme-icon-luna{display:block}
+}
+@media(max-width:700px){.theme-toggle svg{height:22px}}
+nav .links{display:flex;gap:14px;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase}
+nav .links a{display:inline-flex;align-items:center;justify-content:center;min-width:118px;
+  color:var(--ink);text-decoration:none;background:transparent;
+  border:1px solid rgba(var(--ink-rgb),.18);padding:13px 26px;opacity:.85;
+  transition:opacity .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1),background .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
+nav .links a:hover{opacity:1;color:var(--accent);border-color:var(--accent)}
+
+/* Botón hamburguesa — solo existe en celular. En escritorio el nav de arriba
+   se ve entero; abajo de 700px no entran los tres botones junto al logo y
+   los íconos, así que se guardan detrás de este botón en vez de desaparecer
+   sin dejar ningún rastro de navegación. */
+.nav-toggle{display:none;flex-direction:column;justify-content:center;gap:5px;
+  width:34px;height:34px;background:transparent;border:none;cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.nav-toggle i{display:block;width:100%;height:1px;background:var(--ink);
+  transition:transform .3s cubic-bezier(.22,.61,.36,1),opacity .3s cubic-bezier(.22,.61,.36,1)}
+.nav-toggle[aria-expanded="true"] i:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-toggle[aria-expanded="true"] i:nth-child(2){opacity:0}
+.nav-toggle[aria-expanded="true"] i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+@media(max-width:700px){
+  .nav-toggle{display:flex}
+  nav .links{display:flex;flex-direction:column;gap:0;position:absolute;top:100%;left:0;right:0;
+    z-index:59;background:var(--paper);border-bottom:1px solid rgba(var(--ink-rgb),.12);
+    padding:6px var(--pad) 18px;
+    transform:translateY(-8px);opacity:0;pointer-events:none;
+    transition:transform .3s cubic-bezier(.22,.61,.36,1),opacity .3s cubic-bezier(.22,.61,.36,1)}
+  nav .links.abierto{transform:translateY(0);opacity:1;pointer-events:auto}
+  nav .links a{min-width:0;width:100%;padding:16px 0;border:none;border-top:1px solid var(--line);
+    justify-content:flex-start}
+  nav .links a:first-child{border-top:none}
+}
+
+/* ---------- RIEL — el sitio entero viaja de izquierda a derecha ---------- */
+/* El alto vertical tiene que ser proporcional al ancho del riel: si el riel se
+   acorta y el scroll no, el travelling se vuelve lentísimo. Al consolidar de 13
+   estaciones a 7 el recorrido lateral bajó de ~795vw a ~545vw (scroll 1000vh→
+   700vh). Se quitó la estación 04 (mosaico) para aligerar el recorrido: de 7
+   estaciones a 6, el riel pierde ~100vw de ancho, así que el scroll baja de
+   700vh a 600vh para conservar la misma velocidad de viaje. */
+.riel-wrap{height:600vh;position:relative;background:transparent}
+.riel-sticky{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;background:transparent}
+
+/* ---------- FONDO — una foto que viaja con el scroll ----------
+   Antes acá vivía un video cuyos fotogramas se dibujaban en un canvas según
+   la posición del scroll. Con una foto fija todo eso sobra: no hay nada que
+   decodificar cuadro a cuadro, así que se fue el canvas, el <video> oculto y
+   las ~90 líneas de motor de fotogramas. El movimiento no se pierde — nunca
+   vino del video, viene de la cinta, que se desplaza más lento que el riel
+   (dos planos, un solo gesto: eso es el parallax).
+
+   La cinta mide 120% del cuadro y recorre su sobrante (16.7% de su ancho).
+
+   El degradado queda debajo de la foto: es el respaldo si el archivo falta. */
+.riel-fondo{position:absolute;inset:0;z-index:0;overflow:hidden}
+.riel-fondo .cinta{position:absolute;top:0;bottom:0;left:0;width:120%;
+  will-change:transform;transform:translate3d(0,0,0);
+  background:linear-gradient(100deg,var(--paper) 0%,var(--paper2) 45%,var(--line) 75%,var(--paper) 100%)}
+/* Desenfoque fijo, no condicional: la foto queda siempre fuera de foco (como
+   fondo de profundidad de campo real), así el texto es legible todo el tiempo.
+   El scale de más compensa el recorte de borde que deja el blur sobre un
+   elemento con object-fit:cover.
+
+   El brillo alto y el contraste bajo NO son decorativos: esta foto es un
+   atardecer — cielo violeta, terraza en penumbra — y el texto del sitio es
+   tinta oscura. Sin aclararla y aplanarla, la letra cae sobre zonas casi tan
+   oscuras como ella y desaparece. Es el mismo motivo por el que la foto va
+   tan desenfocada: un fondo con detalle compite con la tipografía. */
+.riel-fondo .fondo-foto{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;opacity:0;pointer-events:none;transform:scale(1.12);
+  filter:blur(24px) saturate(.8) brightness(.55) contrast(1.1);
+  transition:opacity 1.1s cubic-bezier(.22,.61,.36,1)}
+.riel-fondo .fondo-foto.listo{opacity:1}
+/* El texto del sitio es OSCURO (--ink), pensado para caer sobre el papel
+   claro — así que lo que le da contraste sobre la foto es aclarar detrás de
+   la letra, no oscurecer. Una viñeta oscura sería para texto claro; acá
+   sería literalmente al revés (texto oscuro sobre fondo más oscuro).
+   Nunca baja de .5 (con el video eran .4): la foto de atardecer es bastante
+   más oscura que el video anterior y esa diferencia hay que compensarla acá.
+   Sube arriba/abajo, donde viven el nav y la banda de acción.
+
+   El reparto entre este velo y el filtro de la foto importa: aclarar todo
+   desde el filtro (brightness alto + contraste bajo) también deja el texto
+   legible, pero lava la foto hasta volverla un gris plano — se pierde el
+   atardecer entero. Es preferible dejar que la foto conserve su color y
+   poner el trabajo de legibilidad acá, que es una capa aparte. */
+.riel-fondo .velo{position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(var(--paper-rgb),.78) 0%,rgba(var(--paper-rgb),.58) 26%,
+    rgba(var(--paper-rgb),.58) 68%,rgba(var(--paper-rgb),.78) 100%)}
+/* La foto de fondo (fondo.jpg) es una escena nocturna — perfecta como
+   atmósfera oscura, pero un velo cálido pensado para tema oscuro no alcanza
+   para que en tema claro quede "tenue" en vez de "una foto oscura con una
+   nube encima". Se sube bastante la opacidad del velo, no la de la foto:
+   así conserva algo de textura/profundidad en vez de desaparecer del todo. */
+@media(max-width:820px){
+  :root[data-theme="light"] .riel-fondo .velo{background:
+    linear-gradient(180deg,rgba(var(--paper-rgb),.94) 0%,rgba(var(--paper-rgb),.86) 26%,
+      rgba(var(--paper-rgb),.86) 68%,rgba(var(--paper-rgb),.94) 100%)}
+}
+
+/* El riel propiamente dicho */
+/* Con el fondo transparente todo el texto del riel quedó flotando sobre un
+   video de luminosidad variable — a veces cae sobre un muro claro, a veces
+   sobre una sombra. Un cuadro blanco resolvería el contraste pero es
+   exactamente el efecto "tarjeta de Canva" que no queremos. En su lugar: un
+   halo tenue (como el borde de una viñeta de cine, no una caja) que separa
+   la letra de lo que sea que haya detrás. text-shadow se hereda, así que
+   basta declararlo una vez acá para que llegue a todo el texto del riel. */
+.riel{position:relative;z-index:2;height:100%;display:flex;align-items:center;
+  width:max-content;padding:0 7vw;gap:5vw;will-change:transform;
+  text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-rgb),.45)}
+/* El nav vive fuera del riel (es 'fixed', no descendiente), así que necesita
+   su propia declaración para el mismo efecto. */
+nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-rgb),.45)}
+/* Botones de fondo sólido: ya tienen su propio contraste resuelto por color,
+   el halo ahí solo ensucia la letra. */
+.cta,.cta:hover{text-shadow:none}
+.est{position:relative;flex:0 0 auto;width:min(74vw,960px);will-change:transform;overflow:hidden}
+/* El overflow:hidden de arriba es la clave para que cada estación quede
+   contenida en su propio carril: sin esto, el numeral fantasma (::before,
+   ver más abajo) y cualquier sombra que se pasa unos px de su caja invaden
+   visualmente la estación vecina apenas ambas quedan parcialmente a la
+   vista durante la transición del riel — eso es el "03" gigante montado
+   sobre el texto de la estación siguiente que se ve en celular. */
+.est .k{margin-bottom:3vh}
+.est h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(38px,6.4vw,104px);
+  line-height:1.02;letter-spacing:-.02em}
+.est p{font-size:16.5px;line-height:1.85;color:rgba(var(--ink-rgb),.72);max-width:440px;margin-top:3vh}
+
+/* Numeral fantasma — profundidad editorial, no decorativo genérico */
+.est[data-num]::before{content:attr(data-num);position:absolute;top:-5vh;right:-1.5vw;
+  font-family:'Fraunces',serif;font-weight:200;font-size:clamp(140px,19vw,360px);
+  line-height:1;letter-spacing:-.03em;color:var(--ink);opacity:.05;
+  pointer-events:none;user-select:none}
+
+/* Etiqueta de categoría — marca a qué ítem del nav pertenece cada área */
+.area-tag{display:inline-block;font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--accent);border-bottom:1px solid rgba(156,122,76,.4);padding-bottom:6px;
+  margin-bottom:2.6vh}
+
+
+/* ---------- ESTACIÓN 01 — CUADRO DE APERTURA ----------
+   No es una lámina con todo apilado al centro (eso es una diapositiva): es el
+   primer fotograma del travelling. La composición se ancla a los bordes del
+   cuadro y se lee en el mismo sentido en que viaja el riel —
+     · arriba, un cintillo de datos sobre un filete, como cabecera de publicación
+     · en medio, el titular a UNA sola línea ocupando el ancho completo
+     · abajo, una banda de columnas separadas por filetes verticales
+   Ni pastillas, ni barra de acento a la izquierda del título, ni pila central. */
+/* 86vw y no 96vw: el riel lleva un padding lateral de 7vw, así que el cuadro
+   útil es 100 - 7 - 7. Con 96vw el titular quedaba cortado por el borde
+   derecho de la pantalla en la primera vista. */
+/* El padding superior lleva un mínimo en píxeles porque la barra fija mide
+   ~93px SIEMPRE (no escala con el alto): con vh a secas, en una pantalla baja
+   el cintillo se metía debajo del nav. */
+.est.portada{width:min(86vw,1760px);height:100%;display:flex;flex-direction:column;
+  padding:max(13vh,118px) 0 max(6vh,120px)}
+
+/* Cintillo — datos del estudio sobre un filete, no una pastilla flotante */
+.portada-cintillo{display:flex;justify-content:space-between;align-items:baseline;
+  gap:14px 40px;flex-wrap:wrap;padding-bottom:2vh;border-bottom:1px solid var(--line);
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink2)}
+.portada-cintillo b{font-weight:400;color:var(--ink)}
+.portada-cintillo .rumbo{display:inline-flex;align-items:center;gap:12px;color:var(--ink2)}
+.portada-cintillo .rumbo i{display:block;width:46px;height:1px;background:var(--line);
+  position:relative;overflow:hidden}
+.portada-cintillo .rumbo i::after{content:'';position:absolute;inset:0 100% 0 -100%;
+  background:var(--accent);animation:rumbo 3.2s cubic-bezier(.5,0,.5,1) infinite}
+@keyframes rumbo{0%{transform:translateX(0)}60%{transform:translateX(200%)}
+  100%{transform:translateX(200%)}}
+
+/* Titular — UNA sola línea que cruza la portada de borde a borde.
+   El tamaño no se puede fijar en vw: con una sola línea el tipo tiene que
+   medir exactamente el ancho del marco, y eso depende de cuántos caracteres
+   tenga la frase — cambiar una palabra cambiaría el tamaño necesario. Por eso
+   lo calcula el script 'AJUSTE DEL TITULAR' al final del documento, midiendo
+   el texto ya compuesto y escalándolo hasta que llene el ancho.
+
+   El font-size de acá es solo el punto de partida (y lo que se ve si el
+   script no corre): aproximado por conteo de caracteres, para que el primer
+   pintado no aparezca con un tamaño absurdo y luego salte. */
+.portada-cabecera{margin:auto 0;position:relative;display:block}
+
+/* León heráldico — no es un ícono posado sobre la foto: se funde con ella.
+   mix-blend-mode:multiply lo funde ópticamente con la foto de fondo (el PNG
+   ya no tiene caja blanca, así que multiply no deja recuadro); el blur y la
+   opacidad baja lo igualan a la profundidad de campo de la foto detrás, como
+   si el sello estuviera grabado en el mismo aire de la escena y no encima. */
+.portada-leon{position:absolute;right:0;top:50%;transform:translateY(-50%);
+  height:clamp(220px,34vw,480px);width:auto;
+  opacity:.18;mix-blend-mode:normal;filter:invert(1) blur(.8px) saturate(.3);
+  pointer-events:none;user-select:none;z-index:0}
+
+.portada-titular{position:relative;z-index:1;display:block}
+.titular-superior{display:block;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(90px,13.5vw,240px);line-height:.88;letter-spacing:-.04em;
+  color:var(--ink)}
+.titular-principal{display:block;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(58px,9vw,160px);line-height:.9;letter-spacing:-.035em;
+  color:var(--accent);margin-top:.18em;margin-left:clamp(20px,6vw,120px)}
+
+/* Banda inferior — antes eran dos columnas (manifiesto + CTA) con un
+   filete vertical entre medio, ritmo de periódico. El manifiesto se mudó
+   a "Nuestro valor" (ver más abajo), así que acá queda solo el cierre: la
+   regla horizontal que remata la composición del titular + el león, con
+   el CTA colgando de ella. Ya no hace falta grid — es un solo bloque. */
+.portada-banda{border-top:1px solid var(--line);padding-top:2.8vh}
+.banda-rotulo{display:block;font-size:10px;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:1.8vh}
+.banda-accion{display:flex;flex-direction:column;align-items:flex-start;gap:1.6vh}
+.banda-accion .cta{padding:14px 30px;background:transparent;color:var(--ink);
+  border:1px solid var(--ink)}
+.banda-accion .cta:hover{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+
+
+/* Estación 02 — el lugar, texto + hueco de video en paralelo */
+.est.lugar{width:min(97vw,1720px);display:grid;grid-template-columns:34px .68fr 1.4fr;
+  grid-template-areas:"spine cat video" "spine title video" "spine text video";column-gap:3.4vw;
+  row-gap:0;align-items:center}
+.est.lugar .spine{grid-area:spine;writing-mode:vertical-rl;transform:rotate(180deg);
+  font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink2);
+  justify-self:center;white-space:nowrap;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.est.lugar .area-tag{grid-area:cat;justify-self:start;width:fit-content}
+.est.lugar h2{grid-area:title;font-size:clamp(34px,4vw,64px);padding-left:26px;
+  border-left:2px solid var(--accent);margin:0}
+/* El <em> de "Nuestro <em>valor</em>" es énfasis semántico, no visual: se
+   compone igual que el resto del titular. Sin esto el navegador lo pondría
+   en itálica sintética, porque de Fraunces solo se cargan las romanas.
+   Vale para las dos estaciones porque el titular se mudó de .est.lugar
+   (la estación de la demo grande, ya retirada) a .seccion-cab. */
+.est.lugar h2 em,.seccion-cab h2 em{font-style:normal;color:inherit;font-weight:inherit}
+.est.lugar .lugar-texto{grid-area:text;padding-left:0;margin-top:3vh}
+.est.lugar .lugar-texto p{max-width:420px;margin-top:0;font-size:clamp(19px,1.9vw,24px);
+  line-height:1.6;color:rgba(var(--ink-rgb),.72)}
+.meta-tags{list-style:none;margin:3.4vh 0 0;padding:0;display:flex;flex-wrap:wrap;row-gap:1.8vh}
+.meta-tags li{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2);
+  padding:0 18px;border-left:1px solid rgba(var(--ink-rgb),.18)}
+.meta-tags li:first-child{border-left:none;padding-left:0}
+.meta-tags li b{display:block;margin-top:8px;font-family:'Fraunces',serif;font-weight:400;
+  font-size:19px;letter-spacing:0;text-transform:none;color:var(--ink)}
+.est.lugar[data-num]::before{top:auto;bottom:-9vh;right:auto;left:-2vw;opacity:.05;font-size:clamp(180px,24vw,420px)}
+.est.portada[data-num]::before{content:none}
+/* El hueco de video de la estación 02 es el componente .clip (ver más abajo)
+   con un tamaño propio: acá manda como pieza protagonista de la pantalla. */
+.est.lugar .video-slot{grid-area:video;height:min(74vh,820px);width:100%;
+  box-shadow:0 30px 60px -35px rgba(13,11,8,.55)}
+
+/* DEMO VIVO — la landing embebida.
+   El iframe se monta SIEMPRE a 1280 px de ancho y se achica con transform.
+   Si en cambio se le diera el ancho del hueco (~700 px), la landing de
+   adentro cruzaría su propio breakpoint de 760 y saltaría a la maqueta de
+   teléfono: se vería un demo que no es el que se vende. Escalando, conserva
+   la maqueta de escritorio. El alto se calcula por script, porque depende
+   de la escala. */
+/* Fondo del hueco ANTES de que el iframe cargue (o si tarda) — y portada
+   fija de las 4 muestras. Antes cada una tenía su propia foto de la
+   propiedad (Casa Bóveda); ahora todas comparten una sola portada de
+   marca (escudo dorado sobre negro, img/demo-poster.jpg) para que la
+   miniatura comunique "esto es SHOCK mostrando su trabajo", no una
+   propiedad específica. */
+.demo-vivo{position:relative;overflow:hidden;background:#14100D;
+  background-image:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/demo-poster.jpg');
+  background-size:cover;background-position:center}
+.demo-vivo iframe{position:absolute;top:0;left:0;width:1280px;border:0;display:block;
+  transform-origin:top left;opacity:0;transition:opacity 1s cubic-bezier(.22,.61,.36,1);
+  touch-action:none}
+.demo-vivo iframe.listo{opacity:1}
+/* touch-action:none arriba es la parte que importa en escritorio con mouse:
+   sin esto, el navegador decide —antes de que corra ni una línea de JS—
+   si el gesto sobre el iframe es "scroll de la página" o no, y el drag del
+   mouse necesita el gesto entero para sí. En celular el recorrido ya NO se
+   arrastra con el dedo (se controla con los botones laterales de
+   demo-detalle.html), así que ahí touch-action vuelve a 'pan-y': el dedo
+   sobre la muestra scrollea la página como cualquier otro punto, sin nada
+   con lo que pelearse. */
+@media(pointer:coarse){
+  .demo-vivo iframe{touch-action:pan-y}
+}
+/* Barra de carga — aparece al activar el demo, desaparece al cargar el iframe */
+@keyframes carga-sweep{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.clip.cargando::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  z-index:6;overflow:hidden;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  animation:carga-sweep 1.1s linear infinite;}
+.clip.cargando::before{content:'Cargando';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);z-index:6;
+  font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--ink);opacity:.85;pointer-events:none;
+  text-shadow:0 1px 4px rgba(0,0,0,.7)}
+/* El rótulo y el índice quedan por encima, y sin robarle el puntero al
+   iframe: si interceptaran el clic, no se podría scrollear adentro. */
+.demo-vivo .indice,.demo-vivo .rotulo{z-index:3;pointer-events:none}
+.demo-vivo .rotulo{background:linear-gradient(0deg,rgba(20,16,13,.72),transparent);
+  padding-bottom:14px}
+/* VELO — cuadro que tapa el iframe hasta que el visitante pide entrar a
+   propósito. El demo scrollea su propio recorrido con la rueda: si el
+   iframe recibiera el mouse/scroll desde el primer momento, alcanzarlo
+   mientras se desliza la página lo trababa (el scroll se lo comía el demo
+   en vez de seguir bajando la landing).
+
+   Por eso el velo TAMBIÉN vuelve solo cuando el visitante deja de tocar la
+   muestra (ver el listener de 'muestra-idle' más abajo en el script): así
+   el próximo cruce por encima —siguiendo bajando la página— no le vuelve a
+   comer el scroll a la landing. La muestra en sí no se reinicia: al volver
+   a tocarla, el recorrido sigue desde donde quedó. */
+.demo-vivo .velo-demo{position:absolute;inset:0;z-index:4;display:flex;align-items:center;
+  justify-content:center;gap:10px;background:rgba(20,16,13,.05);border:0;cursor:pointer;
+  font-family:inherit;letter-spacing:.32em;text-transform:uppercase;font-size:11px;
+  color:var(--paper2);text-shadow:0 1px 6px rgba(0,0,0,.5);
+  opacity:1;transition:opacity .45s cubic-bezier(.22,.61,.36,1),background .45s cubic-bezier(.22,.61,.36,1)}
+.demo-vivo .velo-demo:hover,.demo-vivo .velo-demo:focus-visible{background:rgba(20,16,13,.18)}
+.demo-vivo .velo-demo .tri{width:0;height:0;border-style:solid;
+  border-width:6px 0 6px 9px;border-color:transparent transparent transparent var(--paper2)}
+.demo-vivo .velo-demo.oculto{opacity:0;pointer-events:none}
+/* MUESTRAS DE DETALLE — al revés que el demo grande, estas NO se escalan:
+   el iframe toma el tamaño real del hueco. Es a propósito. La muestra es
+   una ficha técnica, y su tipografía está pensada para leerse al tamaño
+   en que se imprime; escalarla desde 1280 la dejaría ilegible en un
+   recuadro de esta altura. */
+.demo-muestra iframe{width:100%;height:100%;transform:none}
+.demo-muestra .velo-demo{font-size:10px;letter-spacing:.28em}
+/* Botón de cerrar: era solo para el modo pantalla completa móvil, que ya
+   no existe (la muestra siempre vive en su tarjeta). Se deja el botón en
+   el HTML sin quitarlo, pero oculto para siempre. */
+.demo-cerrar{display:none}
+@media(max-width:820px){
+  .est.lugar{width:92vw;grid-template-columns:1fr;
+    grid-template-areas:"cat" "title" "video" "text";row-gap:2vh;padding:3vh 0}
+  .est.lugar .spine{display:none}
+  .est.lugar h2{font-size:clamp(28px,7vw,44px)}
+  .est.lugar .video-slot{height:30vh;margin:4px 0}
+  .est.lugar .lugar-texto{margin-top:1.4vh}
+  .est.lugar .lugar-texto p{font-size:15.5px;line-height:1.6}
+  .meta-tags{margin-top:1.8vh}
+  .meta-tags li{padding:0 14px;font-size:9.5px}
+  .meta-tags li b{margin-top:5px;font-size:13.5px}
+}
+@media(max-width:820px) and (max-height:720px){
+  .est.lugar .video-slot{height:24vh}
+}
+
+.cta{display:inline-block;text-decoration:none;color:var(--paper);background:var(--ink);
+  padding:22px 48px;font-size:13.5px;letter-spacing:.32em;text-transform:uppercase;
+  border:1px solid var(--ink);box-shadow:0 20px 40px -22px rgba(13,11,8,.5);
+  transition:background .45s cubic-bezier(.22,.61,.36,1),border-color .45s cubic-bezier(.22,.61,.36,1),
+  color .45s cubic-bezier(.22,.61,.36,1),box-shadow .45s cubic-bezier(.22,.61,.36,1)}
+.cta:hover{background:var(--accent);border-color:var(--accent);color:var(--paper);
+  box-shadow:0 24px 46px -20px rgba(156,122,76,.4)}
+
+/* Tipografía y piezas de plan — declaradas sueltas (no colgando de
+   .est.plan-landing) porque ahora los tres planes conviven en UNA estación de
+   columnas comparativas, no en tres pantallas separadas. */
+.catalogo-title{font-size:clamp(34px,4vw,64px);line-height:1.02;
+  letter-spacing:-.02em;padding-left:26px;border-left:1px solid var(--accent);
+  margin-bottom:2vh}
+.plan-precio{font-family:'Fraunces',serif;font-weight:400;
+  font-size:clamp(34px,3.6vw,54px);letter-spacing:0;color:var(--accent)}
+.plan-incluye{list-style:none;margin:.6vh 0 0;padding:0;display:flex;flex-direction:column;
+  gap:1.2vh;max-width:46ch}
+.plan-incluye li{position:relative;padding-left:24px;font-size:14.5px;line-height:1.6;
+  color:rgba(var(--ink-rgb),.72)}
+.plan-incluye li::before{content:'—';position:absolute;left:0;color:var(--accent)}
+.plan-acciones{display:flex;align-items:center;gap:30px;flex-wrap:wrap;margin-top:1vh}
+/* Sin prefijo de etiqueta: los botones de compra del catálogo son <button>
+   (disparan el checkout por JS, no navegan a una URL fija) y los de contacto
+   siguen siendo <a>. Los dos tienen que verse igual, así que el selector no
+   puede colgar de 'a'. El reset de font/background es porque un <button>
+   hereda del user-agent, no del documento. */
+.cta-mini{display:inline-block;font-family:inherit;background:transparent;
+  text-decoration:none;color:var(--ink);font-size:12px;letter-spacing:.26em;
+  text-transform:uppercase;border:1px solid var(--ink);padding:16px 30px;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1),
+  border-color .35s cubic-bezier(.22,.61,.36,1)}
+.cta-mini:hover{background:var(--ink);color:var(--paper);text-shadow:none}
+.cta-detalle{display:inline-block;font-family:inherit;background:transparent;
+  text-decoration:none;color:var(--ink2);font-size:11px;letter-spacing:.26em;
+  text-transform:uppercase;border:none;border-bottom:1px solid transparent;padding:0 0 6px;
+  cursor:pointer;margin-top:1vh;
+  transition:color .3s cubic-bezier(.22,.61,.36,1),border-color .3s cubic-bezier(.22,.61,.36,1)}
+.cta-detalle:hover{color:var(--ink);border-color:var(--ink2)}
+
+@media(max-width:820px){
+  .est{width:82vw}
+  /* Antes esta estación quedaba con MUCHO aire arriba y abajo: el padding
+     superior (14vh) empujaba todo hacia abajo, y como .portada-cabecera se
+     centra con margin:auto (ver la declaración compartida más arriba), un
+     titular chico dejaba un hueco enorme de sobra repartido arriba y abajo
+     del bloque — exactamente el "espacio en blanco" que sobraba. La
+     corrección real no es el padding (eso solo mueve el hueco de lugar):
+     es agrandar el contenido que vive en el medio (titular + león, más
+     abajo) para que ocupe ese espacio en vez de dejarlo vacío. */
+  .est.portada{width:86vw;padding:max(7vh,64px) 0 3vh}
+  /* En vertical el titular ya no cabe en una línea: pasa a envolver y la
+     banda de columnas se apila, pero conserva los filetes como separadores. */
+  .portada-cintillo{gap:6px 18px;font-size:9.5px;letter-spacing:.24em;padding-bottom:1.4vh}
+  /* La ciudad/año se cae aquí: en un cuadro tan angosto se comía un renglón
+     entero del cintillo y ese dato ya vive en la estación de contacto. */
+  .portada-cintillo span:nth-child(2){display:none}
+  .portada-cintillo .rumbo i{width:30px}
+  /* En vertical el titular pasa a un escalonado más compacto. Se agrandó
+     bastante respecto de antes (11vw/7.4vw): a ese tamaño el bloque
+     titular+león ocupaba menos de la mitad del alto disponible entre el
+     cintillo y la banda, y el resto quedaba vacío. Más grande, el mismo
+     bloque reparte su peso a lo largo de toda la pantalla. */
+  /* min() con vh, no solo vw: en una pantalla ANGOSTA pero además BAJA
+     (celular con la ventana del navegador achicada en la compu, o un
+     teléfono con poco alto), un tamaño solo en vw no tiene techo — crece
+     igual aunque no quede alto disponible, y el botón "Ver planes" de
+     .portada-banda terminaba empujado fuera de la estación (que recorta
+     lo que se sale, .est tiene overflow:hidden). El tope en vh evita eso:
+     en una pantalla angosta Y alta manda el vw (grande); en una angosta y
+     baja, el vh frena el crecimiento antes de que el título se coma el
+     espacio del botón. */
+  .titular-superior{font-size:min(28vw,23vh);letter-spacing:-.02em;line-height:.92}
+  .titular-principal{font-size:min(8.6vw,7.4vh);margin-left:5vw;margin-top:1.4vh}
+  .portada-cabecera{min-height:0}
+  .portada-banda{padding-top:2vh}
+  .portada-banda p{font-size:17px!important;max-width:none!important}
+  .banda-rotulo{margin-bottom:1.2vh;font-size:11px}
+  .banda-accion{gap:1vh}
+  .banda-accion .cta{padding:15px 32px;font-size:13px}
+
+  /* León — en vertical se mantiene detrás del titular, fundido con el
+     fondo, pero centrado y bastante más grande en proporción al ancho
+     angosto: con el titular agrandado (arriba) necesita crecer junto para
+     seguir leyéndose como un sello detrás del texto y no una figura suelta
+     y chica flotando en una esquina. */
+  .portada-leon{right:auto;left:50%;transform:translate(-50%,-50%);
+    height:78vw;opacity:.46}
+}
+
+/* Portátil de pantalla baja: recorta aire vertical antes de que el contenido
+   choque con el borde del riel-sticky. Va acotado a >=821px a propósito: en
+   celular el alto también es bajo, pero ahí manda el bloque de arriba y este
+   le robaría el margen que el cintillo necesita para librar la barra fija. */
+@media(min-width:821px) and (max-height:720px){
+  .est.portada{padding:118px 0 max(6vh,120px)}
+  .banda-accion{gap:1.2vh}
+}
+
+/* Celular en horizontal — cuadro muy bajo: el titular cede tamaño. */
+@media(max-width:820px) and (max-height:560px){
+  .est.portada{padding:96px 0 2.5vh}
+  .titular-superior{font-size:8.4vw}
+  .titular-principal{font-size:5.6vw;margin-left:6vw;margin-top:.4vh}
+  .portada-banda{padding-top:1.4vh}
+}
+
+/* ---- INDICADOR DESLIZÁ (celular) ---- */
+.swipe-pista{display:none;align-items:center;gap:10px;margin-top:2.2vh;
+  font-size:10px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--ink2);opacity:.6;
+  animation:swipe-bob 2.4s ease-in-out infinite;
+  transition:opacity .6s ease}
+.swipe-pista.oculta{opacity:0!important;pointer-events:none}
+.swipe-pista svg{flex:0 0 auto;opacity:.8}
+@keyframes swipe-bob{0%,100%{transform:translateX(0)}55%{transform:translateX(10px)}}
+@media(max-width:820px){
+  .swipe-pista{display:flex}
+  /* Fluidity: aísla el scroll del riel del resto de la página */
+  .riel-sticky{overscroll-behavior-x:contain}
+
+  /* Sin pantalla completa: la muestra queda dentro de su tarjeta en cel
+     igual que en compu (ver el comentario largo junto a activar()/cerrar()
+     en el script). .demo-cerrar ya no se muestra en ningún lado. */
+  /* Prevenir texto desbordando su caja */
+  .est p,.caja-info h3,.caja-info p,.valor-intro-h,
+  .catalogo-title,.contacto-lead,.fichas-nota,
+  .plan-col h3,.plan-col .nivel{overflow-wrap:break-word;word-break:break-word}
+  /* Grid children: sin min-width:0 el contenido puede romper el layout */
+  .fichas-lista li>*{min-width:0}
+  .triptico-grid>*,.planes-grid>*{min-width:0}
+  /* Items de plan: el texto largo no se sale del carrusel */
+  .plan-col .plan-incluye{max-width:100%}
+  .plan-col .plan-incluye li{font-size:13.5px;line-height:1.55}
+  /* Contacto: correo largo no rompe el layout */
+  .contacto-datos a{word-break:break-all}
+  .contacto-datos{font-size:13.5px}
+}
+
+/* Sin animación (preferencia del sistema) el motor de GSAP no corre y el riel
+   se quedaría clavado en la estación 01. En ese caso la tira se recorre con
+   scroll horizontal normal: se pierde el travelling, no el contenido. */
+@media(prefers-reduced-motion:reduce){
+  .riel-wrap{height:auto}
+  .riel-sticky{position:relative;height:100vh;height:100dvh;
+    overflow-x:auto;overflow-y:hidden}
+  .regla{display:none}
+}
+
+/* ---------- REGLA — la posición dentro del recorrido ---------- */
+.regla{position:fixed;z-index:55;left:var(--pad);right:var(--pad);bottom:4.5vh;
+  color:#fff;mix-blend-mode:difference;pointer-events:none}
+.regla .marcas{position:relative;height:26px;display:flex;justify-content:space-between;
+  align-items:flex-end}
+.regla .marcas span{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;opacity:.45;
+  transition:opacity .45s cubic-bezier(.22,.61,.36,1)}
+.regla .marcas span.on{opacity:1}
+.regla .pista{position:relative;height:1px;background:rgba(var(--ink-rgb),.28);margin-top:10px}
+.regla .pista i{position:absolute;top:-3px;left:0;width:7px;height:7px;background:var(--ink);
+  border-radius:50%;will-change:transform}
+@media(max-width:700px){.regla .marcas span:nth-child(even){display:none}}
+
+footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
+  border-top:1px solid var(--line);
+  padding:7vh var(--pad) 6vh;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  font-size:11.5px;letter-spacing:.28em;text-transform:uppercase}
+
+/* Estación de contacto — mismo lenguaje que el resto: sin caja, alineada a la
+   izquierda, título grande con línea de acento, numeral fantasma de fondo. */
+.est.contacto-est{width:min(58vw,760px);min-height:0;padding:6vh 0}
+.contacto-card{text-align:left;padding:0;border:none;display:flex;
+  flex-direction:column;gap:2.8vh}
+.contacto-card .catalogo-title{margin-bottom:0}
+.contacto-lead{font-size:16px;line-height:1.8;color:rgba(var(--ink-rgb),.68);max-width:44ch;
+  margin-top:-1.4vh}
+.contacto-datos{display:flex;flex-direction:column;align-items:flex-start;gap:1.4vh;
+  font-size:15px}
+.contacto-datos .grupo{display:flex;flex-direction:column;gap:.6vh;margin-top:1vh}
+.contacto-datos .grupo:first-child{margin-top:0}
+.contacto-datos .etiqueta{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--ink2);opacity:.75}
+.contacto-datos a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;
+  transition:border-color .3s cubic-bezier(.22,.61,.36,1)}
+.contacto-datos a:hover{border-color:var(--ink)}
+.contacto-datos span{color:var(--ink2)}
+.redes{display:flex;justify-content:flex-start;gap:14px}
+.redes a{display:flex;align-items:center;justify-content:center;width:42px;height:42px;
+  border:1px solid var(--ink);border-radius:50%;color:var(--ink);transition:background .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
+.redes a:hover{background:var(--ink);color:var(--paper2)}
+.redes svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.4}
+@media(max-width:820px){
+  .est.contacto-est{width:88vw;padding:4vh 0}
+  .contacto-card{gap:2vh}
+  .contacto-lead{font-size:14.5px;line-height:1.65;margin-top:0}
+  .contacto-datos{gap:1vh}
+  .contacto-datos .grupo{margin-top:.6vh}
+}
+
+/* ================================================================
+   PANEL DE CONFIRMACIÓN DE PAGO
+   ================================================================
+   Aparece sobre todo lo demás al volver del procesador. Va con fondo sólido
+   y no translúcido: es el único momento del sitio donde el visitante tiene
+   que leer un dato exacto (su número de orden) y copiarlo si hace falta —
+   ahí el fondo desenfocado detrás estorba en vez de ayudar. */
+.panel-pago{position:fixed;inset:0;z-index:200;display:flex;align-items:center;
+  justify-content:center;padding:var(--pad);
+  background:rgba(13,11,8,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.panel-pago[hidden]{display:none}
+.panel-pago-caja{background:var(--paper);border:1px solid var(--ink);
+  padding:clamp(28px,4vw,54px);max-width:560px;width:100%;
+  display:flex;flex-direction:column;gap:2vh;text-shadow:none;
+  box-shadow:0 40px 90px -30px rgba(13,11,8,.9)}
+.panel-pago-caja h2{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(30px,4vw,52px);line-height:1.02;letter-spacing:-.02em;color:var(--ink)}
+.panel-pago-caja p{margin:0;font-size:15px;line-height:1.75;color:rgba(var(--ink-rgb),.72)}
+.panel-pago-caja p b{font-weight:400;color:var(--ink)}
+.panel-pago-orden{display:flex;flex-direction:column;gap:.7vh;
+  padding:1.8vh 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.panel-pago-orden .etiqueta{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--ink2)}
+.panel-pago-orden b{font-family:'Fraunces',serif;font-weight:400;font-size:26px;
+  letter-spacing:.08em;color:var(--accent);user-select:all}
+
+/* ================================================================
+   CLIP — pieza de video reutilizable
+   ================================================================
+   Es el ladrillo del rediseño: todas las estaciones con material visual usan
+   este mismo componente, solo cambia el tamaño que le da su contenedor.
+
+   Mientras no exista el archivo, el degradado oscuro ES el marcador: se ve
+   un hueco intencional con su rótulo, no una imagen rota. El <video> arranca
+   en opacidad 0 y solo aparece (.listo) cuando el navegador confirma que
+   tiene fotogramas — así nunca se ve un rectángulo negro parpadeando.
+
+   ARCHIVOS: cada clip carga desde data-src (ver bloque de script). Nómbralos
+   video/clip-01.mp4 … video/clip-05.mp4, mudos, 3-8s, corte limpio para loop. */
+.clip{position:relative;overflow:hidden;
+  border:1px solid var(--ink);
+  background:linear-gradient(160deg,#2b241a 0%,#14100D 100%)}
+.clip video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
+  opacity:0;transition:opacity .9s cubic-bezier(.22,.61,.36,1)}
+.clip video.listo{opacity:1}
+/* Rótulo y numeral van sobre el video: llevan sombra propia porque acá el
+   texto es CLARO sobre material oscuro — al revés que en el resto del sitio. */
+.clip .rotulo{position:absolute;left:16px;bottom:14px;z-index:2;display:flex;
+  align-items:center;gap:10px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--paper2);text-shadow:0 1px 6px rgba(0,0,0,.5);
+  transition:opacity .35s cubic-bezier(.22,.61,.36,1)}
+.clip.demo-activa .rotulo{opacity:0;pointer-events:none}
+.clip .rotulo .tri{width:0;height:0;border-style:solid;
+  border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--paper2)}
+.clip .indice{position:absolute;top:14px;right:16px;z-index:2;font-family:'Fraunces',serif;
+  font-size:12px;letter-spacing:.2em;color:var(--paper2);opacity:.85;
+  text-shadow:0 1px 6px rgba(0,0,0,.5)}
+
+/* ================================================================
+   ESTACIÓN 03 — TRÍPTICO (por qué funciona)
+   ================================================================
+   Los tres beneficios que antes eran tres pantallas idénticas seguidas. En una
+   sola pantalla se leen como un argumento de tres partes; en tres pantallas se
+   leían como la misma diapositiva repetida. Cada uno lleva su clip vertical. */
+.est.triptico{width:min(92vw,1560px);display:flex;flex-direction:column;
+  justify-content:center;gap:3.4vh;padding:max(6vh,108px) 0 max(10vh,90px)}
+/* El mínimo en píxeles del padding superior es el mismo motivo que en la
+   portada (ver comentario más arriba, 'AJUSTE DEL TITULAR'): la barra fija
+   mide ~93px SIEMPRE. Con esta estación centrada verticalmente por contenido
+   alto (4 tarjetas), en una ventana baja el título terminaba arrancando
+   por debajo del nav — literalmente tapado, no solo apretado. */
+.seccion-cab{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+  border-bottom:1px solid var(--line);padding-bottom:2vh}
+.seccion-cab h2{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(32px,4.2vw,64px);line-height:1.05;letter-spacing:-.02em}
+.seccion-cab .contador{font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ink2);white-space:nowrap}
+.triptico-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.6vw}
+.tri-item{display:flex;flex-direction:column}
+.tri-item .clip{height:min(36vh,330px);margin-bottom:2.4vh}
+
+/* ---------- CAJAS QUE SE ABREN AL PASAR EL MOUSE O AL TOCAR ----------
+   Fondo transparente a propósito (no blanco): dejan ver el fondo detrás y
+   solo aportan un filete + un tinte casi imperceptible para marcar que ahí
+   hay algo para abrir. El texto vive oculto por defecto; se revela con
+   :hover en mouse, y con la clase .abierta (toggle por click/tap/teclado)
+   en touch — así funciona igual sin depender de que exista un puntero. */
+.caja-info{position:relative;border:1px solid var(--line);background:rgba(var(--ink-rgb),.04);
+  padding:1.6vh 1.4vw;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:background .35s cubic-bezier(.22,.61,.36,1),border-color .35s cubic-bezier(.22,.61,.36,1)}
+.caja-info.abierta,.caja-info:focus-visible{
+  background:rgba(var(--ink-rgb),.07);border-color:var(--accent)}
+.caja-info .caja-cab{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.caja-info .caja-mas{font-family:'Fraunces',serif;font-weight:300;font-size:20px;
+  color:var(--accent);line-height:1;flex:0 0 auto;
+  transition:transform .35s cubic-bezier(.22,.61,.36,1)}
+.caja-info.abierta .caja-mas{transform:rotate(135deg)}
+.caja-info p{margin:0;max-height:0;opacity:0;overflow:hidden;
+  transition:max-height .45s cubic-bezier(.22,.61,.36,1),opacity .3s ease,margin-top .35s cubic-bezier(.22,.61,.36,1)}
+.caja-info.abierta p{max-height:220px;opacity:1;margin-top:1.2vh}
+@media(hover:hover){
+  .caja-info:hover{background:rgba(var(--ink-rgb),.07);border-color:var(--accent)}
+  .caja-info:hover .caja-mas{transform:rotate(135deg)}
+  .caja-info:hover p{max-height:220px;opacity:1;margin-top:1.2vh}
+}
+
+.tri-item .caja-info h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(20px,2.1vw,32px);line-height:1.12;letter-spacing:-.015em;color:var(--ink);
+  /* Reserva siempre el alto de 2 líneas: si un título entra en 1 línea y el
+     vecino se parte en 2, sin esto la estación 03 y la 04 quedan con alto
+     total distinto y, como el riel centra cada panel según su propio alto
+     (.riel{align-items:center}), aparecen desniveladas entre sí al pasar
+     de una a otra — el "salto" que se ve en el screenshot. */
+  min-height:2.24em;display:flex;align-items:flex-start}
+.tri-item .caja-info p{font-size:16px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:36ch}
+
+/* ================================================================
+   ESTACIÓN 04 — FICHAS (lo que ofrecemos)
+   ================================================================
+   Las cuatro fichas que eran cuatro pantallas seguidas. Era un índice
+   editorial de dos columnas —un clip vertical a la izquierda, la lista
+   numerada a la derecha—, pero el clip no tenía ninguna conexión real con
+   Casa Bóveda ni con el resto de la página. Sin ese hueco, la estación
+   pasa a ser una sola columna centrada, con el mismo ancho de lectura que
+   "Nuestro valor". */
+.est.fichas{width:min(74vw,880px);display:flex;flex-direction:column;
+  justify-content:center;gap:2.6vh;padding:max(6vh,108px) 0 max(10vh,90px)}
+.fichas-cuerpo{display:flex;flex-direction:column;gap:2.6vh}
+.fichas-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1.2vh}
+.fichas-lista li{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start;
+  padding-top:1.2vh}
+.fichas-lista .n{font-family:'Fraunces',serif;font-weight:300;font-size:14px;
+  letter-spacing:.2em;color:var(--accent)}
+.fichas-lista .caja-info h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(21px,2.3vw,34px);line-height:1.1;letter-spacing:-.015em;color:var(--ink)}
+.fichas-lista .caja-info p{font-size:16px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:48ch}
+
+/* ================================================================
+   ESTACIÓN 06 — PLANES (catálogo)
+   ================================================================
+   Los tres niveles juntos, en columnas separadas por filete. Un catálogo se
+   entiende comparando: en tres pantallas sueltas el visitante tenía que
+   recordar el plan anterior para saber si el siguiente le convenía. */
+/* Esta estación ya se salía del viewport ANTES de tocar los planes: medida
+   a 1100x680, 719px de estación en 680 de ventana, con el título de
+   "Planes" empujado hasta quedar a 71px del borde — por debajo del nav
+   fijo (93px). El motivo es el mismo de siempre en este sitio (ver el
+   historial arriba de .est.triptico.dos): .est.planes se centra con
+   justify-content:center, así que cuando el contenido no entra, el
+   padding-top ya no protege — el bloque se centra igual y el sobrante
+   desborda parejo para arriba y para abajo.
+   Los valores de acá son más chicos que los originales a propósito, para
+   dejar margen real (no al límite) incluso con el ítem extra que ahora
+   lleva el plan Grande. */
+.est.planes{width:min(94vw,1620px);display:flex;flex-direction:column;
+  justify-content:center;gap:2.6vh;padding:max(6vh,108px) 0 max(10vh,90px)}
+.planes-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.plan-col{display:flex;flex-direction:column;gap:1.3vh;padding:0 2.8vw;
+  border-left:1px solid var(--line)}
+.plan-col:first-child{padding-left:0;border-left:none}
+.plan-col .nivel{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+.plan-col h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(28px,3.4vw,50px);line-height:1;letter-spacing:-.02em;color:var(--ink)}
+.plan-col .plan-precio{font-size:clamp(26px,2.7vw,40px)}
+.plan-col .plan-incluye{margin-top:.4vh}
+.plan-col .plan-incluye li{font-size:15px}
+.plan-col .plan-acciones{margin-top:auto;padding-top:1.4vh}
+/* El nivel del medio es el que más se contrata: lleva el filete de acento
+   completo en vez del filete gris, sin caja ni fondo (nada de "tarjeta"). */
+.plan-col.destacado{border-left-color:var(--accent);box-shadow:1px 0 0 0 var(--accent)}
+.plan-col.destacado .nivel{color:var(--ink)}
+
+/* ---------- Controles del carrusel móvil ----------
+   En escritorio triptico-grid/planes-grid son una grilla fija, todo a la
+   vista, así que estos botones no existen ahí (display:none). En móvil el
+   mismo contenedor pasa a tira horizontal (ver media query abajo) y sin
+   una pista visible el visitante ve la primera tarjeta, no sabe que hay
+   más, y asume que falta contenido — en escritorio la tira ni siquiera
+   scrollea (grid fija), así que ahí los puntos no hacen falta y quedan
+   ocultos; solo se muestran en la tira horizontal de celular. */
+.carrusel-puntos{display:none}
+
+/* ---------- Variante de CUATRO columnas ----------
+   El tríptico y el catálogo nacieron de a tres. La especificación de marca
+   trae cuatro diferenciales y cuatro niveles de plan, y partirlos en 3+1
+   rompería la comparación de un vistazo, que es justamente para lo que sirve
+   ponerlos en fila. Se ensancha la estación y se achica la tipografía; el
+   clip pierde alto porque a cuatro columnas cada una es más angosta y un
+   clip alto y flaco se vuelve una tira. */
+.est.triptico.cuatro{width:min(95vw,1780px)}
+.est.triptico.cuatro .triptico-grid{grid-template-columns:repeat(4,1fr);gap:1.9vw}
+.est.triptico.cuatro .tri-item .clip{height:min(30vh,270px)}
+.est.triptico.cuatro .tri-item .caja-info h3{font-size:clamp(17px,1.45vw,23px)}
+
+/* ---------- Variante de DOS columnas ----------
+   Las cuatro razones partidas en dos estaciones de a dos tarjetas, en vez de
+   una sola estación con dos filas de dos. Con dos filas la estación crecía
+   más alto que el viewport y, como el bloque se centra verticalmente, el
+   título "Por qué funciona" terminaba empujado hacia arriba y tapado por el
+   nav fijo. Con una sola fila por estación el título queda siempre completo
+   arriba, y las tarjetas caben cómodas abajo con letra de tamaño mediano
+   (la misma que el tríptico de tres columnas — no se achica como en .cuatro,
+   porque acá cada tarjeta tiene más ancho de sobra). */
+/* La estación se ensanchó (era min(70vw,900px), o sea tarjetas de ~430px) y
+   el recuadro pasó de 280px a 440px de alto. El motivo no es estético: acá
+   la tarjeta ya no muestra un clip que se reproduce solo, sino una muestra
+   que el visitante ARRASTRA. A 430x280 el gesto no tiene recorrido y el
+   detalle del material no se distingue; a ~600x360 sí. Sigue siendo UNA
+   fila por estación, así que el alto nunca es problema (medido a 1440x820:
+   ~725px de estación; a 1100x680: ~636px). */
+.est.triptico.dos{width:min(86vw,1280px)}
+.est.triptico.dos .triptico-grid{grid-template-columns:repeat(2,1fr);gap:2.8vw}
+.est.triptico.dos .tri-item .clip{height:min(44vh,440px)}
+
+/* Manifiesto grande — solo en la estación 02 (.con-intro), la primera de
+   "Nuestro valor". Es el texto que antes vivía en la portada; acá tiene
+   que leerse GRANDE pero sin romper el ajuste de una sola pantalla que a
+   esta sección ya le costó tres rediseños (ver el historial arriba de
+   .est.triptico.dos y de .cuatro).
+
+   Ojo con .est.triptico{justify-content:center}: el bloque entero se
+   centra dentro de los 100vh de la estación, así que un contenido más
+   alto no solo puede pasarse del borde de abajo — empuja el bloque hacia
+   ARRIBA por igual, y el título puede terminar tapado por el nav aunque
+   el total todavía "quepa". Medido con la primera versión de este
+   manifiesto (fuente más grande, 38vh de muestra, 2.6vh de gap): a
+   1100x680 la estación medía 703px —se salía— y el título quedaba a 4px
+   del nav, prácticamente tocándolo. Estos valores son la segunda vuelta,
+   más ajustados en los tres frentes a la vez: la muestra, el espacio
+   entre bloques y el padding inferior de la estación. SOLO en esta
+   estación vía .con-intro — la 03 no lleva manifiesto y no lo necesita. */
+.est.triptico.dos.con-intro{gap:2.2vh;padding-bottom:max(10vh,90px)}
+.est.triptico.dos.con-intro .tri-item .clip{height:min(34vh,340px)}
+.valor-intro{max-width:70ch}
+.valor-intro-h{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(20px,2.3vw,32px);line-height:1.2;letter-spacing:-.01em;
+  color:var(--ink)}
+.valor-intro-dato{display:block;margin-top:1vh;font-size:11px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--ink2)}
+
+/* Pie del catálogo — el nivel a medida, fuera de la comparación de precios */
+/* Sin margin-top: .est.planes ya pone gap:2.6vh entre cada hijo directo
+   (seccion-cab / planes-grid / carrusel-puntos / planes-pie); un margin-top
+   acá se sumaba a ese gap en vez de reemplazarlo, duplicando el aire
+   antes de esta línea sin necesidad. */
+.planes-pie{padding-top:1.4vh;border-top:1px solid var(--line);
+  font-size:14px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:70ch}
+.enlace-pie{font-family:inherit;font-size:inherit;background:transparent;border:none;
+  padding:0;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--accent);
+  transition:color .3s cubic-bezier(.22,.61,.36,1)}
+.enlace-pie:hover{color:var(--accent)}
+
+/* Pie de la estación de entregables — la nota sobre la producción con IA */
+.fichas-nota{margin:1.6vh 0 0;font-size:12.5px;line-height:1.7;color:var(--ink2);
+  max-width:52ch;padding-top:1.6vh;border-top:1px solid var(--line)}
+
+/* Línea de precio bajo el botón de la portada */
+.banda-desde{display:block;margin-top:1.4vh;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink2)}
+
+/* "Cómo se produce" — línea de tiempo horizontal. El ::before dibuja el
+   filete que atraviesa los 4 pasos; el numeral se pinta encima con el
+   mismo fondo de la página como "parche", así el filete queda cortado
+   justo donde está el número en vez de pasar por encima del texto. */
+.est.proceso{width:min(90vw,1500px);display:flex;flex-direction:column;
+  justify-content:center;gap:4vh;padding:max(6vh,108px) 0 max(10vh,90px)}
+.proceso-linea{display:grid;grid-template-columns:repeat(4,1fr);gap:2.4vw;position:relative}
+.proceso-linea::before{content:'';position:absolute;top:19px;left:0;right:0;height:1px;background:var(--line)}
+.proceso-paso{position:relative;display:flex;flex-direction:column;gap:1.2vh}
+.proceso-num{position:relative;z-index:1;align-self:flex-start;background:var(--paper);
+  padding-right:16px;font-family:'Fraunces',serif;font-weight:300;font-size:28px;
+  letter-spacing:.02em;color:var(--accent)}
+.proceso-paso h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
+  font-size:clamp(18px,1.7vw,22px);line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+.proceso-paso p{margin:0;font-size:14px;line-height:1.7;color:rgba(var(--ink-rgb),.72)}
+@media(max-width:1100px){
+  .proceso-linea{grid-template-columns:1fr 1fr;row-gap:3.4vh}
+  .proceso-linea::before{display:none}
+  /* Sin línea que tapar acá abajo — el fondo sólido detrás del número
+     queda como un parche suelto que no combina con la foto de fondo. */
+  .proceso-num{background:none;padding-right:0}
+}
+@media(max-width:820px){
+  .est.proceso{width:88vw;gap:2.4vh}
+  .proceso-linea{grid-template-columns:1fr;gap:2.6vh}
+  .proceso-num{font-size:22px}
+  .proceso-paso p{font-size:13px}
+}
+
+@media(max-width:1240px){
+  .est.triptico.cuatro .triptico-grid{grid-template-columns:repeat(2,1fr);gap:2.2vw}
+  .est.triptico.cuatro{width:min(88vw,1100px)}
+  .est.triptico.cuatro .tri-item .clip{height:min(24vh,210px)}
+}
+@media(max-width:1100px){
+  .est.fichas{width:min(88vw,900px)}
+}
+@media(max-width:820px){
+  .est.triptico,.est.planes{width:88vw;gap:2.4vh}
+  /* Repetidos con la clase .cuatro a propósito: '.est.triptico.cuatro' pesa
+     más que '.est.triptico', así que sin esto las medidas de escritorio se
+     colarían dentro de esta media query y el móvil quedaría a 95vw. */
+  .est.triptico.cuatro,.est.triptico.dos,.est.triptico.dos.con-intro{width:88vw}
+  .est.triptico.cuatro .tri-item .clip{height:24vh}
+  .planes-pie{font-size:12.5px}
+  .seccion-cab h2{font-size:clamp(24px,6vw,34px)}
+  .seccion-cab .contador{display:none}
+  /* En vertical las columnas no caben: el trío y el catálogo pasan a una
+     tira horizontal que se arrastra con el dedo dentro de la estación —
+     UNA tarjeta completa a la vez, no un asomo de la siguiente. Con la
+     flecha, el punto contador o un swipe se avanza a la próxima ya
+     completa; nada queda escondido detrás de otra. */
+  .triptico-grid,.planes-grid{display:flex;overflow-x:auto;
+    scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+    padding-bottom:1.4vh;scrollbar-width:none}
+  .triptico-grid::-webkit-scrollbar,.planes-grid::-webkit-scrollbar{display:none}
+  .tri-item,.plan-col{flex:0 0 100%;scroll-snap-align:start}
+  /* Sin borde-guía: en la tira de escritorio ese filete separa columnas
+     vecinas visibles a la vez, pero acá cada tarjeta ocupa toda la fila
+     ella sola, así que el filete quedaría como una línea suelta pegada
+     al borde izquierdo sin nada que separar. */
+  .plan-col{padding:0;border-left:none}
+  /* Puntos — solo indican cuántas tarjetas hay y cuál se está viendo, no se
+     tocan. Antes había flechas + contador, pero las flechas daban problemas
+     (ver el comentario largo en el JS): se sacaron del todo, así que la
+     única forma de avanzar es deslizando la tarjeta con el dedo — el punto
+     de más adelante, más chico y apagado, ya insinúa que hay que seguir. */
+  .carrusel-puntos{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:1.8vh}
+  .carrusel-puntos i{display:block;width:6px;height:6px;border-radius:50%;
+    background:var(--ink);opacity:.28;transform:scale(1);
+    transition:opacity .35s cubic-bezier(.22,.61,.36,1),transform .35s cubic-bezier(.22,.61,.36,1)}
+  .carrusel-puntos i.on{opacity:1;transform:scale(1.3)}
+  .tri-item .clip{height:24vh}
+  /* '.est.triptico.dos' y '.est.triptico.dos.con-intro' (las dos estaciones
+     de "Nuestro valor") pesan MÁS que el '.tri-item .clip' de arriba —
+     3 y 4 clases propias contra 2 — así que sin repetir el selector acá
+     esas reglas de escritorio (44vh y 34vh) seguían ganando adentro de
+     esta media query, aunque esté declarada después. Ese era el motivo
+     real de las tarjetas "saliendo" por abajo del viewport en celular: el
+     recuadro no se achicaba, solo se angostaba. */
+  .est.triptico.dos .tri-item .clip,
+  .est.triptico.dos.con-intro .tri-item .clip{height:24vh}
+  .demo-vivo:not(.demo-poster-1):not(.demo-poster-2):not(.demo-poster-3):not(.demo-poster-4){background-image:linear-gradient(rgba(20,16,13,.4),rgba(20,16,13,.62)),url('img/fondo-movil.jpg')}
+  .tri-item .caja-info p,.fichas-lista .caja-info p{font-size:13.5px;line-height:1.6}
+  .caja-info{padding:1.6vh 3.6vw}
+  .est.fichas{width:88vw;padding:max(4vh,100px) 0 max(10vh,90px)}
+  .fichas-lista li{padding-top:1.2vh;gap:14px}
+  .fichas-lista .caja-info h3{font-size:clamp(18px,5vw,24px)}
+  /* El numeral fantasma de fondo (tríptico, fichas, planes, contacto) se
+     calculaba con el mismo clamp que en escritorio: en un cuadro de ~88vw
+     el mínimo de 140px pesa demasiado y se lee como un número suelto
+     flotando sobre el texto en vez de una marca de agua discreta. */
+  .est[data-num]::before{font-size:clamp(90px,26vw,220px);top:-3vh;right:-1vw}
+  .est{will-change:auto}
+  /* === RIEL MÓVIL: scroll vertical libre === */
+  /* overscroll-behavior-y:none (antes 'contain') es clave y no es cosmético:
+     'contain' bloqueaba que el rebote se escapara hacia el navegador (pull-
+     to-refresh), pero seguía permitiendo el rebote elástico LOCAL en los
+     extremos — y ese rebote nativo peleaba con Lenis (que ya clampea el
+     scroll por su cuenta), así que al llegar abajo del todo y volver a
+     subir se veía un salto: un instante en la posición "cruda" del rebote
+     nativo antes de que Lenis la corrigiera. 'none' mata el rebote nativo
+     por completo (y de paso también evita el pull-to-refresh, más fuerte
+     que 'contain'), dejando a Lenis como única autoridad en los bordes. */
+  html{scroll-snap-type:none;scroll-padding-top:0;overscroll-behavior-y:none}
+  .riel-wrap{height:auto}
+  .riel-sticky{position:relative!important;top:auto!important;
+    height:auto;overflow:visible}
+  .riel-fondo{position:fixed!important;inset:0;z-index:0}
+  #rielTrack{padding:0!important;gap:0!important;
+    flex-direction:column!important;width:100vw!important;
+    align-items:stretch;will-change:auto!important}
+  .est,.est.portada,
+  .est.triptico,.est.triptico.dos,.est.triptico.cuatro,.est.triptico.dos.con-intro,
+  .est.planes,.est.fichas,.est.contacto-est{
+    width:100vw!important;height:auto;box-sizing:border-box;
+    padding-left:6vw!important;padding-right:6vw!important}
+  .est.portada{height:100svh!important}
+}
+
+/* =============================================================
+   PORTADA MÓVIL — rediseño de cero
+
+   Estructura: flex columna con space-between.
+   · portada-cabecera (flex:1): label + título + león + swipe hint
+   · portada-banda: descripción + CTA (pegado al fondo)
+
+   Todo debe caber en 100dvh sin zonas muertas ni overflow.
+   ============================================================= */
+@media(max-width:820px){
+
+  /* Contenedor: dos bloques, uno arriba y otro pegado abajo */
+  .est.portada{
+    padding-top:max(10vh,88px)!important;
+    padding-bottom:max(9vh,80px)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:space-between!important;
+    align-items:flex-start!important;
+    gap:0!important;
+  }
+
+  /* Bloque A — ocupa todo el espacio vertical disponible,
+     contenido arriba-arriba; el swipe hint flota al fondo del bloque */
+  .portada-cabecera{
+    flex:1!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    position:relative!important;
+    width:100%!important;
+    min-height:0!important;
+    overflow:visible!important;
+    padding-top:2.4vh!important;
+    padding-bottom:2.4vh!important;
+  }
+
+  /* Label de estudio: arriba del título */
+  .portada-cabecera>.banda-rotulo{
+    font-size:9.5px!important;
+    letter-spacing:.36em!important;
+    color:var(--accent)!important;
+    opacity:1!important;
+    margin-bottom:3vh!important;
+    display:block!important;
+    position:relative!important;
+    z-index:1!important;
+  }
+
+  /* Título SHOCK */
+  .titular-superior{
+    font-size:min(29vw,23vh)!important;
+    letter-spacing:-.025em!important;
+    line-height:.88!important;
+    position:relative!important;
+    z-index:1!important;
+  }
+
+  /* León: centrado en el bloque A, detrás del título */
+  .portada-leon{
+    position:absolute!important;
+    left:50%!important;
+    top:50%!important;
+    right:auto!important;
+    bottom:auto!important;
+    transform:translate(-50%,-50%)!important;
+    height:84vw!important;
+    opacity:.38!important;
+    z-index:0!important;
+  }
+
+  /* Swipe hint: empujado al fondo del bloque A con margin-top:auto */
+  .swipe-pista{
+    position:relative!important;
+    z-index:1!important;
+    margin-top:auto!important;
+    display:flex!important;
+    opacity:.5!important;
+    animation:swipe-bob 2.4s ease-in-out infinite!important;
+  }
+
+  /* Bloque B — descripción + CTA, siempre al fondo */
+  .portada-banda{
+    flex:0 0 auto!important;
+    width:100%!important;
+    padding-top:2.4vh!important;
+    border-top:1px solid var(--line)!important;
+    margin-top:0!important;
+  }
+  .portada-banda p{
+    font-size:13.5px!important;
+    line-height:1.65!important;
+    max-width:none!important;
+    margin-bottom:2vh!important;
+    color:rgba(var(--ink-rgb),.62)!important;
+  }
+  /* CTA ancho completo */
+  .banda-accion{
+    display:block!important;
+    gap:0!important;
+  }
+  .banda-accion .cta{
+    display:block!important;
+    text-align:center!important;
+    padding:16px 20px!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Ocultar numeral fantasma en portada (ya no aplica) */
+  .est.portada[data-num]::before{content:none!important}
+
+  /* Regla: alejarla un poco del fondo para no chocar con la banda */
+  .regla{bottom:2.2vh!important}
+}
+
+/* =============================================================
+   PANELES INTERIORES MÓVIL — rediseño de cero
+
+   El problema raíz: justify-content:center en los paneles de
+   escritorio se hereda en móvil y deja la mitad de la pantalla
+   vacía arriba y abajo. La solución: flex-start en todos los
+   paneles interiores, con padding suficiente para librar el nav.
+   ============================================================= */
+@media(max-width:820px){
+
+  /* Paneles con demos: desde arriba (el clip necesita anclar al heading) */
+  .est.triptico,.est.triptico.dos,.est.triptico.dos.con-intro,
+  .est.triptico.cuatro,.est.planes{
+    justify-content:flex-start!important;
+    padding-top:max(9vh,86px)!important;
+    padding-bottom:max(8vh,72px)!important;
+  }
+  /* Fichas: desde arriba, espacio mínimo */
+  .est.fichas{
+    justify-content:flex-start!important;
+    padding-top:max(9vh,86px)!important;
+    padding-bottom:max(6vh,56px)!important;
+  }
+
+  /* --- Nuestro valor (triptico.dos) --- */
+  .est.triptico.dos,.est.triptico.dos.con-intro{
+    gap:2vh!important
+  }
+  .seccion-cab{padding-bottom:1.4vh!important}
+  .seccion-cab h2{font-size:clamp(22px,5.8vw,28px)!important}
+  .valor-intro{margin-bottom:0!important}
+  .valor-intro-h{font-size:16px!important;line-height:1.45!important}
+  .valor-intro-dato{font-size:9.5px!important;margin-top:.5vh!important}
+  /* Grid de demos: crece para llenar el panel */
+  .est.triptico.dos .triptico-grid,
+  .est.triptico.dos.con-intro .triptico-grid{flex:1 1 auto!important;min-height:0!important;align-items:stretch!important}
+  .est.triptico.dos .tri-item,
+  .est.triptico.dos.con-intro .tri-item{height:100%!important;display:flex!important;flex-direction:column!important}
+  .est.triptico.dos .tri-item .clip,
+  .est.triptico.dos.con-intro .tri-item .clip{flex:1 1 auto!important;height:auto!important;min-height:32vh!important}
+  .carrusel-puntos{margin-top:1.4vh!important}
+
+  /* --- Qué recibís (fichas) --- */
+  .est.fichas{gap:0!important}
+  .fichas-cuerpo{flex:1 1 auto!important;min-height:0!important;justify-content:space-between!important;margin:0!important;gap:0!important}
+  .fichas-lista{flex:1 1 auto!important;min-height:0!important;justify-content:space-evenly!important;gap:0!important}
+  .fichas-lista li{padding-top:.8vh!important;gap:12px!important}
+  .fichas-nota{
+    font-size:11px!important;line-height:1.55!important;
+    margin-top:1.2vh!important;padding-top:1.2vh!important
+  }
+
+  /* --- Planes --- */
+  .est.planes{justify-content:flex-start!important;gap:1.8vh!important}
+  .est.planes .planes-grid{flex:1 1 auto!important;min-height:0!important}
+  .est.planes .plan-col{height:100%!important;justify-content:space-between!important}
+  .est.planes .planes-pie{margin-top:0!important}
+  .plan-col .plan-acciones{padding-top:1.2vh!important;margin-top:0!important}
+  .cta-mini{
+    padding:13px 20px!important;
+    font-size:11px!important;
+    letter-spacing:.2em!important
+  }
+  .planes-pie{
+    font-size:11.5px!important;
+    line-height:1.55!important;
+    padding-top:1.2vh!important
+  }
+  .plan-col .plan-incluye li{font-size:13px!important;line-height:1.5!important}
+  .plan-col h3{font-size:clamp(24px,3vw,30px)!important}
+  .plan-col .plan-precio{font-size:clamp(24px,2.5vw,32px)!important}
+}
+
+/* === MEJORAS MÓVIL === */
+@media(max-width:820px){
+  @keyframes swipe-bob{0%,100%{transform:translateY(0)}55%{transform:translateY(10px)}}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ================= NAVEGACIÓN ================= -->
+<div class="marcas-esquina"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+
+<nav>
+  <div class="logo-group">
+    <div class="logo">SHOCK</div>
+    <div class="logo-social">
+      <a href="https://instagram.com/shock.crc" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/></svg>
+      </a>
+      <a href="https://facebook.com/shock.crc" target="_blank" rel="noopener" aria-label="Facebook">
+        <svg viewBox="0 0 320 512" fill="currentColor"><path d="M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z"/></svg>
+      </a>
+      <a data-wa-enlace href="#" aria-label="WhatsApp">
+        <svg viewBox="0 0 448 512" fill="currentColor"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224-99.6 224-222 0-59.3-25.2-115-67-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg>
+      </a>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-label="Cambiar a tema claro">
+        <svg class="theme-icon-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+        <svg class="theme-icon-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2z"/></svg>
+      </button>
+    </div>
+  </div>
+  <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Abrir menú">
+    <i></i><i></i><i></i>
+  </button>
+  <div class="links" id="navLinks">
+    <a href="#valor" data-ir="#valor">Valor</a>
+    <a href="#servicio" data-ir="#servicio">Servicio</a>
+    <a href="#catalogo" data-ir="#catalogo">Planes</a>
+  </div>
+</nav>
+
+<!-- ================= REGLA ================= -->
+<div class="regla">
+  <div class="marcas" id="marcas">
+    <span data-est>01</span>
+    <span data-est>02</span>
+    <span data-est>03</span>
+    <span data-est>04</span>
+    <span data-est>05</span>
+    <span data-est>06</span>
+    <span data-est>07</span>
+  </div>
+</div>
+
+<!-- ================= RIEL ================= -->
+<section class="riel-wrap" id="riel">
+  <div class="riel-sticky">
+
+    <!-- Fondo: una sola foto, muy desenfocada, que viaja más lento que el
+         riel. El móvil recibe una versión de 900px — a 26px de blur nadie
+         distingue la resolución, y son 48 KB en vez de 137. -->
+    <div class="riel-fondo">
+      <div class="cinta" id="cinta">
+        <img class="fondo-foto" id="fondoFoto" alt="" aria-hidden="true"
+             decoding="async" fetchpriority="high"
+             src="img/fondo.jpg"
+             srcset="img/fondo-movil.jpg 900w, img/fondo.jpg 1600w"
+             sizes="120vw">
+      </div>
+      <div class="velo"></div>
+    </div>
+
+    <div class="riel" id="rielTrack">
+
+      <!-- 01 — CUADRO DE APERTURA -->
+      <div class="est portada" data-est-panel data-num="01">
+
+        <div class="portada-cabecera">
+          <span class="banda-rotulo" style="display:block;margin-bottom:1.6vh">Diseño visual · Costa Rica</span>
+          <h1 class="portada-titular">
+            <span class="titular-superior">SHOCK</span>
+          </h1>
+          <img class="portada-leon" src="img/leon-t.png?v=2" alt="" aria-hidden="true">
+          <div class="swipe-pista" id="swipePista" aria-hidden="true">
+            Deslizá para explorar
+            <svg width="10" height="22" viewBox="0 0 10 22" fill="none">
+              <path d="M5 1v14M1 11l4 6 4-6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="portada-banda">
+          <p style="font-size:15px;line-height:1.75;color:var(--ink2);max-width:44ch;margin-bottom:2.2vh">Tours inmersivos para hospedajes de lujo. Producción 100% remota, entrega en 72 horas.</p>
+          <div class="banda-accion">
+            <a href="#catalogo" data-ir="#catalogo" class="cta">Ver planes</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= 02 y 03 — NUESTRO VALOR =================
+           Las cuatro razones, DE A DOS POR ESTACIÓN.
+
+           Pasó por tres formas antes de esta, y las tres fallaron por el
+           mismo lado. Cuatro tarjetas en una fila: cada muestra quedaba tan
+           chica que no se podía ni mirar ni arrastrar. Cuatro en 2x2: la
+           estación crecía más alto que el viewport y, al centrarse
+           verticalmente, el nav fijo (~93px) le tapaba el título — medido,
+           744px de estación en una ventana de 680. Y una razón por estación
+           a pantalla completa: la muestra quedaba enorme, pero al lado
+           entraba tanto texto que se leía como un ensayo, no como un
+           argumento de venta.
+
+           De a dos es el punto medio que funciona: entran dos muestras
+           grandes (~600x360 en escritorio, contra 330x210 de las cuatro en
+           fila) y el texto sigue viviendo dentro de la caja que se abre, o
+           sea oculto hasta que alguien lo pide. Una fila por estación, así
+           que el problema de alto del 2x2 no aparece. -->
+      <div class="est triptico dos con-intro" id="valor" data-est-panel data-num="02">
+        <div class="seccion-cab">
+          <h2 class="serif">Nuestro <em>valor</em></h2>
+          <span class="contador">Razones 01 — 02</span>
+        </div>
+        <!-- El manifiesto que antes vivía en la portada ("Tu hospedaje
+             merece..."). Se mudó acá porque este es el momento en que el
+             argumento tiene con qué respaldarse: el visitante ya está
+             mirando una muestra, no leyendo una promesa en el aire.
+             Reescrito sin la comparación contra "sitios web genéricos" —
+             solo qué hacemos y qué se lleva. -->
+        <div class="valor-intro">
+          <p class="valor-intro-h">Convertimos tu propiedad en un recorrido cinematográfico continuo, a partir de material existente. Como el que se muestra a continuación.</p>
+          <span class="valor-intro-dato">La demo muestra el resultado del servicio: el recorrido de la propiedad se produce a partir del material que envía el cliente.</span>
+        </div>
+        <div class="triptico-grid">
+          <div class="tri-item">
+            <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
+                 Bóveda, que el visitante mueve él mismo. Sin data-clip a
+                 propósito, para que el script de los clips no monte un
+                 <video> encima del iframe. -->
+            <div class="clip demo-vivo demo-muestra demo-poster-1" data-muestra>
+              <iframe data-src="demo-detalle.html?bloque=parte-1" title="Casa Bóveda — Parte I de IV — Intro al Espacio" tabindex="-1"></iframe>
+              <span class="rotulo"><span class="tri"></span>Parte I de IV — Intro al Espacio</span>
+              <button type="button" class="velo-demo"><span class="tri"></span>Ver demo</button>
+              <button type="button" class="demo-cerrar" aria-label="Cerrar demo">×</button>
+            </div>
+            <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+              <div class="caja-cab">
+                <h3>Generar confianza</h3>
+                <span class="caja-mas">+</span>
+              </div>
+              <p>El huésped ve la propiedad completa antes de reservar y sabe exactamente qué va a encontrar al llegar.</p>
+            </div>
+          </div>
+          <div class="tri-item">
+            <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
+                 Bóveda, que el visitante mueve él mismo. Sin data-clip a
+                 propósito, para que el script de los clips no monte un
+                 <video> encima del iframe. -->
+            <div class="clip demo-vivo demo-muestra demo-poster-2" data-muestra>
+              <iframe data-src="demo-detalle.html?bloque=parte-2" title="Casa Bóveda — Parte II de IV — Tour Inmersivo" tabindex="-1"></iframe>
+              <span class="rotulo"><span class="tri"></span>Parte II de IV — Tour Inmersivo</span>
+              <button type="button" class="velo-demo"><span class="tri"></span>Ver demo</button>
+              <button type="button" class="demo-cerrar" aria-label="Cerrar demo">×</button>
+            </div>
+            <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+              <div class="caja-cab">
+                <h3>Facilitar reservas</h3>
+                <span class="caja-mas">+</span>
+              </div>
+              <p>El huésped compara antes de reservar. La propiedad que se percibe de mayor valor es la que elige — y la que puede cobrar más por lo mismo.</p>
+            </div>
+          </div>
+        </div>
+        <div class="carrusel-puntos" data-carrusel aria-hidden="true"></div>
+      </div>
+
+      <!-- 03 — NUESTRO VALOR (2/2) — las otras dos razones -->
+      <div class="est triptico dos" data-est-panel data-num="03">
+        <div class="seccion-cab">
+          <h2 class="serif">Nuestro <em>valor</em></h2>
+          <span class="contador">Razones 03 — 04</span>
+        </div>
+        <div class="triptico-grid">
+          <div class="tri-item">
+            <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
+                 Bóveda, que el visitante mueve él mismo. Sin data-clip a
+                 propósito, para que el script de los clips no monte un
+                 <video> encima del iframe. -->
+            <div class="clip demo-vivo demo-muestra demo-poster-3" data-muestra>
+              <iframe data-src="demo-detalle.html?bloque=parte-3" title="Casa Bóveda — Parte III de IV — Áreas Completas" tabindex="-1"></iframe>
+              <span class="rotulo"><span class="tri"></span>Parte III de IV — Áreas Completas</span>
+              <button type="button" class="velo-demo"><span class="tri"></span>Ver demo</button>
+              <button type="button" class="demo-cerrar" aria-label="Cerrar demo">×</button>
+            </div>
+            <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+              <div class="caja-cab">
+                <h3>Optimizar recursos</h3>
+                <span class="caja-mas">+</span>
+              </div>
+              <p>Un solo paquete funciona en todos los canales — Airbnb, Instagram, Facebook, sitio web. No se requiere producción adicional por plataforma.</p>
+            </div>
+          </div>
+          <div class="tri-item">
+            <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
+                 Bóveda, que el visitante mueve él mismo. Sin data-clip a
+                 propósito, para que el script de los clips no monte un
+                 <video> encima del iframe. -->
+            <div class="clip demo-vivo demo-muestra demo-poster-4" data-muestra>
+              <iframe data-src="demo-detalle.html?bloque=parte-4" title="Casa Bóveda — Parte IV de IV — Recorrido Entero" tabindex="-1"></iframe>
+              <span class="rotulo"><span class="tri"></span>Parte IV de IV — Recorrido Entero</span>
+              <button type="button" class="velo-demo"><span class="tri"></span>Ver demo</button>
+              <button type="button" class="demo-cerrar" aria-label="Cerrar demo">×</button>
+            </div>
+            <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+              <div class="caja-cab">
+                <h3>Ahorrar tiempo</h3>
+                <span class="caja-mas">+</span>
+              </div>
+              <p>El cliente envía su material y recibe todo listo en 72 horas. Sin sesiones de grabación, sin coordinación de equipos, sin edición adicional.</p>
+            </div>
+          </div>
+        </div>
+        <div class="carrusel-puntos" data-carrusel aria-hidden="true"></div>
+      </div>
+
+      <!-- 05 — LO QUE OFRECEMOS — índice editorial junto a un clip vertical -->
+      <!-- Sin fichas-media a propósito: llevaba un clip en loop
+           (video/clip-05.mp4) sin ninguna conexión real con Casa Bóveda ni
+           con el resto de la página, y no había metraje nuevo disponible
+           para reemplazarlo por una muestra interactiva sin repetir uno de
+           los cuatro tramos que "Nuestro valor" ya mostró. Mejor sin ese
+           hueco que con uno relleno a la fuerza — la estación pasa a ser
+           una sola columna centrada. -->
+      <div class="est fichas" id="servicio" data-est-panel data-num="04">
+        <div class="fichas-cuerpo">
+          <div class="seccion-cab">
+            <h2 class="serif">Lo que incluye</h2>
+            <span class="contador">Incluido en los 3 planes, en distinto alcance</span>
+          </div>
+          <ul class="fichas-lista">
+            <li>
+              <span class="n">01</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>El tour completo</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Un video cinematográfico continuo que recorre la propiedad de principio a fin. No una grabación genérica, sino una pieza que posiciona la propiedad en el nivel que merece.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">02</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>Cada espacio, por separado</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Tomas sueltas individuales de cada ambiente destacado de la propiedad, listas para usarse en publicaciones, historias o campañas específicas por espacio.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">03</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>Reels listos para publicar</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Piezas verticales optimizadas para Instagram y Facebook, en formato y duración adecuados para cada plataforma. El cliente las recibe listas para subir.</p>
+              </div>
+            </li>
+          </ul>
+          <p class="fichas-nota">Cada entrega pasa por dirección de arte y edición cinematográfica real, potenciada con IA de video de última generación — no una plantilla automática, un resultado curado a mano.</p>
+        </div>
+      </div>
+
+      <!-- 06 — CÓMO SE PRODUCE — la estación de autoridad que le faltaba al
+           sitio: hasta acá todo es funcionalidad y precio, sin nada que
+           respalde que hay método real detrás. Cuatro pasos concretos,
+           mismo patrón numerado que "Qué recibís", puesta antes de
+           Preguntas/Planes para generar confianza justo antes de la
+           decisión de compra. -->
+      <!-- "Cómo se produce" — línea de tiempo horizontal, NO acordeón.
+           Iba con el mismo componente .caja-info que "Lo que incluye" y
+           "Preguntas": tres estaciones seguidas con cajas apiladas se leían
+           como un formulario. Un proceso secuencial se entiende mejor como
+           una línea con pasos conectados que como una lista de FAQ. -->
+      <div class="est proceso" id="proceso" data-est-panel data-num="05">
+        <div class="seccion-cab">
+          <h2 class="serif">Cómo se produce</h2>
+          <span class="contador">Método, no automatización a ciegas</span>
+        </div>
+        <div class="proceso-linea">
+          <div class="proceso-paso">
+            <span class="proceso-num">01</span>
+            <h3>El cliente contacta</h3>
+            <p>Selecciona su plan y realiza el primer contacto vía WhatsApp. Se coordina el alcance del proyecto y se confirma el 50% inicial para dar inicio.</p>
+          </div>
+          <div class="proceso-paso">
+            <span class="proceso-num">02</span>
+            <h3>Envía su material</h3>
+            <p>Proporciona fotografías de los espacios a destacar, siguiendo una guía sencilla de ángulos e iluminación proporcionada previamente. No se requiere equipo profesional.</p>
+          </div>
+          <div class="proceso-paso">
+            <span class="proceso-num">03</span>
+            <h3>Se produce y ajusta</h3>
+            <p>Con el material recibido se produce el video cinematográfico completo. El cliente revisa el resultado y aplica las rondas de ajustes incluidas en su plan.</p>
+          </div>
+          <div class="proceso-paso">
+            <span class="proceso-num">04</span>
+            <h3>Recibe todo listo</h3>
+            <p>Videos, tomas sueltas y reels — listos para publicar. Se confirma el 50% restante contra entrega.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 07 — PREGUNTAS — objeciones más comunes antes de comprar,
+           resueltas justo antes de la estación de precios. Mismo componente
+           .caja-info que el resto del sitio (clic o hover para abrir), así
+           no se suma ningún patrón de interacción nuevo. -->
+      <div class="est fichas preguntas" id="preguntas" data-est-panel data-num="06">
+        <div class="fichas-cuerpo">
+          <div class="seccion-cab">
+            <h2 class="serif">Preguntas</h2>
+            <span class="contador">Antes de decidir</span>
+          </div>
+          <ul class="fichas-lista">
+            <li>
+              <span class="n">01</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>¿Necesito equipo profesional?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>No se requiere equipo profesional. El material se produce a partir de fotografías tomadas por el propio cliente, siguiendo una guía sencilla de ángulos e iluminación proporcionada previamente. Todo el trabajo de cámara, movimiento y producción cinematográfica se realiza mediante tecnología especializada.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">02</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>¿Cómo es la comunicación durante el proceso?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Hay comunicación directa por WhatsApp durante todo el proceso, desde el primer contacto hasta la entrega final.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">03</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>¿El pago es seguro?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>El pago se realiza en dos partes: un 50% al iniciar el proyecto y el 50% restante contra la entrega final. Se aceptan múltiples métodos de pago para mayor comodidad del cliente.</p>
+              </div>
+            </li>
+            <li>
+              <span class="n">04</span>
+              <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
+                <div class="caja-cab">
+                  <h3>¿Qué recibo al final?</h3>
+                  <span class="caja-mas">+</span>
+                </div>
+                <p>Todo se entrega por enlace de descarga (Google Drive): el video completo, las tomas sueltas por espacio y los reels, ya organizados y listos para publicar.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 07 — CATÁLOGO — los cuatro niveles comparables de un vistazo.
+           Los botones NO llevan href a una pasarela escrita a mano: cada uno
+           declara su plan con data-plan y el motor de checkout (al final del
+           documento) decide a dónde va según lo que haya en la configuración.
+           Así cambiar de procesador de pago es tocar una constante, no seis
+           enlaces repartidos por el HTML. -->
+      <div class="est planes" id="catalogo" data-est-panel data-num="07">
+        <div class="seccion-cab">
+          <h2 class="serif">Planes</h2>
+          <span class="contador">Tres niveles</span>
+        </div>
+        <div class="planes-grid" data-lenis-prevent>
+          <!-- La escalera de planes: los TRES entregables son siempre los
+               mismos (video cinematográfico completo, tomas sueltas por
+               espacio, formato vertical para reels — la estación "Qué
+               recibís" promete justamente eso "en todos los planes"), y lo
+               que escala con el precio es la PROFUNDIDAD de producción de
+               cada uno, no la lista de qué incluye:
+                 · Cobertura: cuántos espacios entran en el recorrido y en
+                   las tomas sueltas (los principales -> la propiedad
+                   completa).
+                 · Detalle: un plano general por espacio -> varios ángulos
+                   por espacio.
+                 · Modelo de IA de video: básico en Chico, uno superior en
+                   Mediano, el más avanzado disponible en Grande — más
+                   fluidez de cámara y realismo, y también más caro de
+                   generar, que es lo que de verdad justifica el salto de
+                   precio (no es el mismo costo de producción). -->
+          <div class="plan-col">
+            <span class="nivel">Nivel 01 — Para empezar</span>
+            <h3>Chico</h3>
+            <span class="plan-precio serif">$125</span>
+            <ul class="plan-incluye">
+              <li>Video cinematográfico de los espacios principales</li>
+              <li>Tomas sueltas — un plano por espacio</li>
+              <li>Reels detallados del video principal</li>
+              <li>1 ronda de ajustes</li>
+            </ul>
+            <div class="plan-acciones">
+              <button type="button" class="cta-mini" data-plan="chico">Adquirir</button>
+            </div>
+          </div>
+          <div class="plan-col destacado">
+            <span class="nivel">Nivel 02 — El más elegido</span>
+            <h3>Mediano</h3>
+            <span class="plan-precio serif">$250</span>
+            <ul class="plan-incluye">
+              <li>Video cinematográfico de espacios principales y amenidades destacadas</li>
+              <li>Tomas sueltas con más de un ángulo por espacio</li>
+              <li>Reels detallados de la propiedad completa</li>
+              <li>2 rondas de ajustes</li>
+            </ul>
+            <div class="plan-acciones">
+              <button type="button" class="cta-mini" data-plan="mediano">Adquirir</button>
+            </div>
+          </div>
+          <div class="plan-col">
+            <span class="nivel">Nivel 03 — Cobertura amplia</span>
+            <h3>Grande</h3>
+            <span class="plan-precio serif">$450</span>
+            <ul class="plan-incluye">
+              <li>Video cinematográfico de la propiedad completa, con el modelo de IA más avanzado</li>
+              <li>Tomas sueltas al mayor nivel de detalle, espacio por espacio</li>
+              <li>Reels detallados de la propiedad completa, de cada toma suelta, y reel en formato especializado para Meta Ads</li>
+              <li>3 rondas de ajustes</li>
+            </ul>
+            <div class="plan-acciones">
+              <button type="button" class="cta-mini" data-plan="grande">Adquirir</button>
+            </div>
+          </div>
+        </div>
+        <div class="carrusel-puntos" data-carrusel aria-hidden="true"></div>
+        <!-- El nivel a medida (10-12 tomas) no ocupa columna: su precio
+             depende del alcance, así que compararlo al lado de tres precios
+             cerrados confunde en vez de ayudar. Vive como una línea al pie
+             que abre conversación. -->
+        <p class="planes-pie">¿Necesitás disponibilidad completa — video completo más tomas sueltas
+          detalladas, 12 tomas o más, cadenas o varias propiedades?
+          <button type="button" class="enlace-pie" data-plan="completa">Pedí una cotización</button>.</p>
+      </div>
+
+
+    </div>
+  </div>
+</section>
+
+<!-- Pie de página eliminado a pedido: el recorrido termina en la estación de
+     planes, sin nada más abajo. -->
+
+<!-- ===== CONFIRMACIÓN DE PAGO =====
+     Este panel vive oculto y solo aparece cuando el visitante vuelve del
+     procesador de pago con ?pago=ok en la URL. No es una página aparte a
+     propósito: el sitio es un archivo único, y una segunda página obligaría
+     a duplicar cabecera, fuentes y estilos para mostrar cuatro líneas. -->
+<div class="panel-pago" id="panelPago" hidden role="dialog" aria-modal="true"
+     aria-labelledby="panelPagoTitulo">
+  <div class="panel-pago-caja">
+    <span class="area-tag">Pago recibido</span>
+    <h2 class="serif" id="panelPagoTitulo">Listo — ya sos parte</h2>
+    <p>Recibimos tu <b data-pago-plan></b>. El último paso es contarnos de tu
+       propiedad: mandanos el mensaje que ya te dejamos escrito y arrancamos.</p>
+    <div class="panel-pago-orden">
+      <span class="etiqueta">Tu número de orden</span>
+      <b data-pago-orden></b>
+    </div>
+    <div class="plan-acciones">
+      <a class="cta-mini" data-pago-wa href="#" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+      <button type="button" class="cta-detalle" data-pago-cerrar>Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* El riel horizontal corre en TODOS los tamaños de pantalla — ya no hay
+   rama vertical apilada para móvil. */
+const esMovil=false;
+/* Restauración de scroll: se deja en manos del navegador (comportamiento
+   por defecto). Antes se apagaba y se restauraba a mano con sessionStorage
+   porque la demo en celular navegaba a una página aparte y había que
+   volver al punto exacto; ahora la demo vive siempre embebida en su
+   tarjeta y esa vuelta ya no existe. */
+if(!((performance.getEntriesByType('navigation')[0]||{}).type==='back_forward')){
+  window.scrollTo(0,0);
+}
+
+/* Selector de tema. El estado inicial ya lo puso el script chico en <head>
+   (sin eso, FOUC); acá solo falta reaccionar al clic y guardar la
+   preferencia. El meta 'theme-color' también se actualiza — es lo que
+   pinta la barra del navegador en móvil, y dejarlo clavado en negro se
+   nota si el resto de la pantalla pasó a claro. */
+(function(){
+  const boton=document.getElementById('themeToggle');
+  const metaColor=document.querySelector('meta[name="theme-color"]');
+  if(!boton) return;
+  boton.addEventListener('click',()=>{
+    const raiz=document.documentElement;
+    const esClaro=raiz.getAttribute('data-theme')==='light';
+    if(esClaro){
+      raiz.removeAttribute('data-theme');
+      try{ localStorage.setItem('shock-tema','dark'); }catch(_){}
+      if(metaColor) metaColor.setAttribute('content','#0D0B08');
+    }else{
+      raiz.setAttribute('data-theme','light');
+      try{ localStorage.setItem('shock-tema','light'); }catch(_){}
+      if(metaColor) metaColor.setAttribute('content','#F1EAD9');
+    }
+  });
+  if(raizEsClara()) metaColor && metaColor.setAttribute('content','#F1EAD9');
+  function raizEsClara(){ return document.documentElement.getAttribute('data-theme')==='light'; }
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script>
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* El riel corre igual en móvil que en desktop — solo se desactiva si el
+   sistema pide movimiento reducido o si el CDN de GSAP no cargó. */
+if(!reduced && window.gsap && window.ScrollTrigger){
+  gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ignoreMobileResize:true});
+
+  /* ===== FLUIDEZ — Lenis sincronizado con el ticker de GSAP =====
+     En touch el scroll nativo ya es fluido; Lenis encima lo traba.
+     Solo se activa con puntero fino (mouse/trackpad). */
+  let lenis=null;
+  const esTouch=matchMedia('(pointer:coarse)').matches;
+  if(window.Lenis && !esTouch){
+    lenis=new Lenis({duration:1.1,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
+    lenis.on('scroll',ScrollTrigger.update);
+    gsap.ticker.add(t=>lenis.raf(t*1000));
+    gsap.ticker.lagSmoothing(0);
+  } else {
+    window.addEventListener('scroll',ScrollTrigger.update,{passive:true});
+  }
+  document.fonts && document.fonts.ready.then(()=>ScrollTrigger.refresh());
+  /* El ancho del riel depende del texto ya compuesto: si se mide antes de que
+     todo esté maquetado, el recorrido queda corto y la última estación nunca
+     llega al centro. Por eso se refresca también al 'load'. */
+  addEventListener('load',()=>ScrollTrigger.refresh());
+
+  const track=document.getElementById('rielTrack');
+  const cinta=document.getElementById('cinta');
+
+  if(esTouch){
+    /* ===== MÓVIL: scroll vertical libre, con Lenis dándole la inercia
+       lenta (ver bloque de arriba). El fondo queda fixed por CSS. */
+    const paneles=Array.from(document.querySelectorAll('[data-est-panel]'));
+    const marcas=Array.from(document.querySelectorAll('#marcas [data-est]'));
+    const pista=document.querySelector('.regla .pista');
+    const pistaDot=pista && pista.querySelector('i');
+    const navEl=document.querySelector('nav');
+
+    window.addEventListener('scroll',()=>{
+      const mid=window.scrollY+window.innerHeight*0.5;
+      let idx=0;
+      paneles.forEach((p,k)=>{ if(p.offsetTop<=mid) idx=k; });
+      marcas.forEach((m,k)=>m.classList.toggle('on',k===idx));
+      if(navEl) navEl.classList.toggle('mostrar-logo',idx>0);
+      if(pistaDot && pista){
+        const p=window.scrollY/Math.max(1,document.body.scrollHeight-window.innerHeight);
+        pistaDot.style.transform=`translateX(${p*(pista.offsetWidth-7)}px)`;
+      }
+    },{passive:true});
+
+    /* Anclas: links del nav y botón "Ver planes" */
+    document.querySelectorAll('[data-ir]').forEach(enlace=>{
+      enlace.addEventListener('click',ev=>{
+        const est=document.querySelector(enlace.dataset.ir);
+        if(!est) return;
+        ev.preventDefault();
+        if(lenis) lenis.scrollTo(est.offsetTop,{duration:1.4});
+        else window.scrollTo({top:est.offsetTop,behavior:'smooth'});
+      });
+    });
+
+    /* BLOQUEO DE SCROLL DE LA PÁGINA mientras el dedo arrastra adentro de
+       una demo. touch-action:none puesto en el <iframe> (ver CSS) debería
+       alcanzar en teoría, pero Safari/iOS lo ignora bastante seguido —
+       el dedo mueve el video Y la página al mismo tiempo, así que
+       explorar la demo termina sacando al visitante de la sección sin
+       querer. position:fixed en el body es la única forma confiable de
+       evitar esto en iOS: mientras dura, el body físicamente no puede
+       scrollear, sin importar qué gesto reciba. La demo (adentro del
+       iframe) avisa por postMessage cuándo empieza y cuándo termina el
+       arrastre (ver 'bloquear-scroll'/'desbloquear-scroll' en
+       demo-detalle.html). */
+    let scrollBloqueado=false, scrollGuardado=0;
+    const bloquearScroll=()=>{
+      if(scrollBloqueado) return;
+      scrollBloqueado=true;
+      scrollGuardado=window.scrollY;
+      if(lenis) lenis.stop();
+      document.body.style.position='fixed';
+      document.body.style.top=(-scrollGuardado)+'px';
+      document.body.style.left='0';
+      document.body.style.right='0';
+    };
+    const desbloquearScroll=()=>{
+      if(!scrollBloqueado) return;
+      scrollBloqueado=false;
+      document.body.style.position='';
+      document.body.style.top='';
+      document.body.style.left='';
+      document.body.style.right='';
+      window.scrollTo(0,scrollGuardado);
+      /* Lenis guarda su propio valor de scroll objetivo; sin re-sincronizarlo
+         acá, al reanudar (lenis.start) intentaría "arrastrar" la página de
+         vuelta hacia donde se había quedado antes del bloqueo. OJO:
+         scrollTo() se ignora en silencio mientras isStopped es true (ver
+         el guard interno de Lenis) — sin force:true este resync no hacía
+         nada, y al hacer start() Lenis tiraba de la página hacia su
+         posición vieja. Eso era el "se traba y se pone mal" al pasar por
+         las demos. */
+      if(lenis){ lenis.scrollTo(scrollGuardado,{immediate:true,force:true}); lenis.start(); }
+    };
+
+    /* postMessage de muestras → avanzar a siguiente estación */
+    addEventListener('message',ev=>{
+      const tipo=ev&&ev.data&&ev.data.tipo;
+      if(tipo==='bloquear-scroll'){ bloquearScroll(); return; }
+      if(tipo==='desbloquear-scroll'){ desbloquearScroll(); return; }
+      if(tipo!=='muestra-fin' && tipo!=='muestra-idle') return;
+      const marco=[...document.querySelectorAll('[data-muestra] iframe')]
+        .find(f=>f.contentWindow===ev.source);
+      if(!marco) return;
+      if(tipo==='muestra-idle'){
+        const velo=marco.parentElement.querySelector('.velo-demo');
+        if(velo) velo.classList.remove('oculto');
+        marco.parentElement.classList.remove('demo-activa');
+        return;
+      }
+      const estActual=marco.closest('[data-est-panel]');
+      if(!estActual) return;
+      const siguiente=paneles[paneles.indexOf(estActual)+1];
+      if(!siguiente) return;
+      if(lenis) lenis.scrollTo(siguiente.offsetTop,{duration:1.4});
+      else window.scrollTo({top:siguiente.offsetTop,behavior:'smooth'});
+    });
+
+  } else {
+    /* ===== ESCRITORIO: GSAP vertical→horizontal travelling ===== */
+    document.fonts && document.fonts.ready.then(()=>ScrollTrigger.refresh());
+    addEventListener('load',()=>ScrollTrigger.refresh());
+
+    const distancia=()=>Math.max(0,track.scrollWidth-innerWidth);
+    const rielWrap=document.querySelector('.riel-wrap');
+    const rielHeight=()=>rielWrap?.offsetHeight||innerHeight;
+    
+    gsap.fromTo(track,{x:0},{
+      x:()=>-distancia(),ease:'none',force3D:true,
+      scrollTrigger:{trigger:'.riel-wrap',start:'top top',end:()=>`+=${rielHeight()}`,
+        scrub:true,invalidateOnRefresh:true,overwrite:'auto'}
+    });
+    gsap.fromTo(cinta,{xPercent:0},{
+      xPercent:-14,ease:'none',force3D:true,
+      scrollTrigger:{trigger:'.riel-wrap',start:'top top',end:()=>`+=${rielHeight()}`,
+        scrub:2,invalidateOnRefresh:true,overwrite:'auto'}
+    });
+
+    (()=>{
+      const wrap=document.querySelector('.riel-wrap');
+      const posicionDe=est=>{
+        const total=distancia();
+        if(total<=0) return wrap.offsetTop;
+        const padIzq=parseFloat(getComputedStyle(track).paddingLeft)||0;
+        const avance=Math.min(Math.max((est.offsetLeft-padIzq)/total,0),1);
+        return wrap.offsetTop+avance*(wrap.offsetHeight-innerHeight);
+      };
+      document.querySelectorAll('[data-ir]').forEach(enlace=>{
+        enlace.addEventListener('click',ev=>{
+          const est=document.querySelector(enlace.dataset.ir);
+          if(!est) return;
+          ev.preventDefault();
+          const y=posicionDe(est);
+          if(lenis) lenis.scrollTo(y,{duration:1.4});
+          else scrollTo({top:y,behavior:'smooth'});
+        });
+      });
+      addEventListener('message',ev=>{
+        const tipo=ev&&ev.data&&ev.data.tipo;
+        if(tipo!=='muestra-fin' && tipo!=='muestra-idle') return;
+        const marco=[...document.querySelectorAll('[data-muestra] iframe')]
+          .find(f=>f.contentWindow===ev.source);
+        if(!marco) return;
+        if(tipo==='muestra-idle'){
+          const velo=marco.parentElement.querySelector('.velo-demo');
+          if(velo) velo.classList.remove('oculto');
+          marco.parentElement.classList.remove('demo-activa');
+          return;
+        }
+        const estActual=marco.closest('[data-est-panel]');
+        if(!estActual) return;
+        const paneles=[...document.querySelectorAll('[data-est-panel]')];
+        const siguiente=paneles[paneles.indexOf(estActual)+1];
+        if(!siguiente) return;
+        const y=posicionDe(siguiente);
+        if(lenis) lenis.scrollTo(y,{duration:1.4});
+        else scrollTo({top:y,behavior:'smooth'});
+      });
+    })();
+
+    (()=>{
+      const marcas=gsap.utils.toArray('#marcas [data-est]');
+      ScrollTrigger.create({
+        trigger:'.riel-wrap',start:'top top',end:()=>`+=${rielHeight()}`,scrub:true,
+        onUpdate:self=>{
+          const p=self.progress;
+          const i=Math.min(marcas.length-1,Math.floor(p*marcas.length));
+          marcas.forEach((m,k)=>m.classList.toggle('on',k===i));
+        }
+      });
+    })();
+  }
+
+}
+
+</script>
+
+<!-- ===== FONDO — aparición de la foto =====
+     Va en su PROPIO bloque, fuera del if(!reduced && gsap...) de arriba, y
+     eso no es cosmético: ahí adentro no correría con movimiento reducido ni
+     si el CDN de GSAP falla, y como la foto arranca en opacity:0 el sitio se
+     quedaría literalmente sin fondo en ambos casos. El parallax es opcional;
+     que se vea el fondo, no.
+
+     Sin canvas ni fotogramas: solo esperar a que la imagen esté decodificada
+     para encenderla. Si se mostrara de una, en una conexión lenta se vería
+     entrar a medio cargar sobre el degradado. -->
+<script>
+(()=>{
+  const foto=document.getElementById('fondoFoto');
+  if(!foto) return;
+  const encender=()=>foto.classList.add('listo');
+  /* Los listeners se enganchan SIEMPRE, y solo después se mira si la imagen
+     ya estaba lista. Al revés no funciona: con srcset/sizes, 'complete' puede
+     dar true un instante mientras el navegador todavía resuelve cuál archivo
+     bajar, con naturalWidth en 0. Leer eso como "falló" y borrar la imagen
+     tira una foto que cargó perfecto — pasó, con el 200 OK en la pestaña de
+     red. Y no hace falta inferir el fracaso: si la foto no llega, se queda en
+     opacity:0 y se ve el degradado de respaldo de la cinta, que es
+     exactamente lo mismo que se vería borrándola. */
+  foto.addEventListener('load',encender);
+  foto.addEventListener('error',()=>foto.remove(),{once:true});
+  if(foto.complete && foto.naturalWidth) encender();
+})();
+</script>
+
+<!-- ===== MENÚ MÓVIL — el botón hamburguesa muestra/oculta los enlaces =====
+     Va en su propio bloque, sin depender de GSAP: la navegación tiene que
+     funcionar aunque el motor de scroll no cargue. Se cierra solo al elegir
+     un enlace (que además dispara el salto a la estación) o al tocar afuera. -->
+<script>
+(()=>{
+  const boton=document.getElementById('navToggle');
+  const panel=document.getElementById('navLinks');
+  if(!boton||!panel) return;
+  const cerrar=()=>{ panel.classList.remove('abierto'); boton.setAttribute('aria-expanded','false'); };
+  const abrir=()=>{ panel.classList.add('abierto'); boton.setAttribute('aria-expanded','true'); };
+  boton.addEventListener('click',()=>{
+    panel.classList.contains('abierto') ? cerrar() : abrir();
+  });
+  panel.querySelectorAll('a').forEach(a=>a.addEventListener('click',cerrar));
+  document.addEventListener('click',ev=>{
+    if(!panel.classList.contains('abierto')) return;
+    if(panel.contains(ev.target)||boton.contains(ev.target)) return;
+    cerrar();
+  });
+  addEventListener('keydown',ev=>{ if(ev.key==='Escape') cerrar(); });
+  /* Si el visitante gira el teléfono o entra desde un tablet ancho, que el
+     panel no quede "abierto" fantasma detrás del nav de escritorio. */
+  addEventListener('resize',()=>{ if(innerWidth>700) cerrar(); });
+})();
+</script>
+
+<!-- ===== CAJAS DE INFO — abren con hover (mouse) o toggle (tap/teclado) =====
+     El :hover en CSS ya resuelve el mouse. Esto es solo para touch/teclado,
+     donde no hay hover real: un tap o un Enter/Espacio alterna .abierta. -->
+<script>
+(()=>{
+  const cajas=[...document.querySelectorAll('.caja-info')];
+  if(!cajas.length) return;
+  const cerrar=caja=>{
+    caja.classList.remove('abierta');
+    caja.setAttribute('aria-expanded','false');
+  };
+  /* Solo una caja abierta a la vez: al abrir una (tap/teclado), se cierran
+     todas las demás que estuvieran abiertas por tap. Antes quedaban varias
+     abiertas al mismo tiempo si el visitante iba tocando una tras otra —
+     con textos largos, la sección crecía cada vez más alto. */
+  const alternar=caja=>{
+    const abierta=!caja.classList.contains('abierta');
+    if(abierta) cajas.forEach(c=>{ if(c!==caja) cerrar(c) });
+    caja.classList.toggle('abierta',abierta);
+    caja.setAttribute('aria-expanded',abierta?'true':'false');
+  };
+  cajas.forEach(caja=>{
+    caja.addEventListener('click',()=>alternar(caja));
+    caja.addEventListener('keydown',ev=>{
+      if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); alternar(caja); }
+    });
+  });
+})();
+</script>
+
+<!-- ===== CARRUSEL MÓVIL — puntos, sin botones =====
+     triptico-grid y planes-grid son grilla fija en escritorio; en móvil
+     pasan a tira horizontal con scroll-snap (ver CSS), y se recorren
+     deslizando el dedo — el único control. Antes había flechas + contador,
+     pero las flechas daban problemas (el toque a veces se lo comía el
+     scroll horizontal de la tira, dejando el clic sin efecto o pegando un
+     salto raro). Se sacaron: ahora [data-carrusel] es un puntito por
+     tarjeta, puramente informativo — indica cuántas hay y cuál se está
+     viendo, nunca se toca. Cada uno apunta al contenedor scrolleable que
+     tiene justo antes en el HTML (su hermano anterior). -->
+<script>
+(()=>{
+  const navs=[...document.querySelectorAll('[data-carrusel]')];
+  if(!navs.length) return;
+  navs.forEach(nav=>{
+    const grid=nav.previousElementSibling;
+    if(!grid) return;
+    const items=[...grid.children];
+    if(!items.length) return;
+
+    items.forEach(()=>nav.appendChild(document.createElement('i')));
+    const puntos=[...nav.children];
+
+    const pasoAncho=()=>{
+      const estilo=getComputedStyle(grid);
+      const gap=parseFloat(estilo.columnGap||estilo.gap||'0')||0;
+      return items[0].getBoundingClientRect().width+gap;
+    };
+    const indiceActual=()=>{
+      const paso=pasoAncho();
+      return paso?Math.round(grid.scrollLeft/paso):0;
+    };
+    const actualizar=()=>{
+      const i=Math.min(items.length-1,Math.max(0,indiceActual()));
+      puntos.forEach((p,k)=>p.classList.toggle('on',k===i));
+    };
+
+    let espera=null;
+    grid.addEventListener('scroll',()=>{
+      clearTimeout(espera);
+      espera=setTimeout(actualizar,80);
+    },{passive:true});
+    addEventListener('resize',actualizar);
+    actualizar();
+  });
+})();
+</script>
+
+<!-- ===== CLIPS — carga y reproducción bajo demanda =====
+     Hay 5 huecos de video en el riel. Cargarlos todos al abrir la página
+     sería descargar decenas de MB de golpe y dejar 9 videos decodificando en
+     paralelo encima del canvas del fondo — el scroll se cae. Así que:
+
+       · el archivo se descarga recién cuando su estación está por entrar
+         en cuadro (IntersectionObserver con margen de una pantalla),
+       · se reproduce solo mientras está visible y se pausa al salir,
+       · si el archivo no existe todavía, el hueco se queda con su degradado
+         y su rótulo — que es exactamente el marcador de maqueta.
+
+     El observer mide contra el viewport real, y como el riel se mueve por
+     transform, las posiciones que ve ya vienen transformadas: funciona igual
+     en el recorrido horizontal que en un scroll normal. -->
+<script>
+(()=>{
+  const huecos=[...document.querySelectorAll('.clip[data-clip]')];
+  if(!huecos.length) return;
+  const sinMovimiento=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const montar=hueco=>{
+    if(hueco.dataset.montado) return;
+    hueco.dataset.montado='1';
+    const v=document.createElement('video');
+    v.muted=true; v.loop=true; v.playsInline=true;
+    v.setAttribute('playsinline','');       /* iOS antiguo no lee la propiedad */
+    v.preload='auto'; v.setAttribute('aria-hidden','true');
+    v.addEventListener('loadeddata',()=>v.classList.add('listo'),{once:true});
+    /* Si el archivo no está, no dejamos rastro: el degradado del hueco queda
+       como estaba y no aparece el ícono de video roto. */
+    v.addEventListener('error',()=>v.remove(),{once:true});
+    v.src=hueco.dataset.clip;
+    hueco.prepend(v);
+  };
+
+  /* PRECARGA — por medición directa, no con IntersectionObserver.
+     El observer no sirve para adelantarse acá: .riel-sticky tiene
+     overflow:hidden, y un ancestro que recorta deja la intersección en cero
+     por más rootMargin que se le ponga (el margen agranda la raíz, no el
+     recorte del ancestro). Resultado: el clip se montaría justo al entrar en
+     cuadro y se vería el negro un instante.
+
+     Midiendo la posición a mano el recorte no estorba: getBoundingClientRect
+     devuelve la posición real ya transformada por el riel. Montamos todo lo
+     que esté a menos de una pantalla y media del borde. */
+  /* El piso de 800 es un seguro: si se mide con la pestaña en segundo plano
+     innerWidth puede llegar en 0, y con margen 0 no se montaría ningún clip
+     nunca (la revisión siguiente solo llega con un scroll o un resize). */
+  const ancho=()=>Math.max(innerWidth||0, document.documentElement.clientWidth||0, 800);
+  const margen=()=>ancho()*1.5;
+  let pendientes=huecos.slice();
+  let pedido=false;
+  const revisar=()=>{
+    pedido=false;
+    if(!pendientes.length) return;
+    const m=margen();
+    pendientes=pendientes.filter(h=>{
+      const r=h.getBoundingClientRect();
+      const cerca=r.right>-m && r.left<ancho()+m;
+      if(cerca) montar(h);
+      return !cerca;
+    });
+  };
+  /* El riel se mueve por scroll, así que basta escuchar scroll + resize;
+     el rAF evita medir 60 veces por gesto. */
+  const programar=()=>{ if(!pedido){ pedido=true; requestAnimationFrame(revisar); } };
+  addEventListener('scroll',programar,{passive:true});
+  addEventListener('resize',programar);
+  revisar();
+
+  /* La reproducción sí es trabajo del observer: acá queremos exactamente el
+     recorte que el observer respeta — que suene/corra solo lo que se ve. */
+  const reproducir=new IntersectionObserver(entradas=>{
+    entradas.forEach(e=>{
+      const v=e.target.querySelector('video');
+      if(!v) return;
+      if(e.isIntersecting && !sinMovimiento){ v.play().catch(()=>{}); }
+      else{ v.pause(); }
+    });
+  },{threshold:.15});
+  huecos.forEach(h=>reproducir.observe(h));
+})();
+</script>
+
+
+<!-- ================================================================
+     VENTA — configuración y checkout
+     ================================================================
+     TODO lo que hay que tocar para poner el sitio a vender está en el objeto
+     CONFIG de acá abajo. Nada de datos de contacto ni de precios repartidos
+     por el HTML: el número de WhatsApp aparece en tres lugares distintos de
+     la página y los enlaces de pago en cuatro, así que si vivieran en el
+     marcado, cambiar de procesador sería una cacería.
+
+     CÓMO FUNCIONA UNA COMPRA
+       1. El visitante toca "Adquirir" en un plan.
+       2. Se genera un número de orden y se guarda en el navegador.
+       3. Si ese plan tiene enlace de pago configurado, se lo manda ahí.
+          Si no lo tiene, cae a WhatsApp con el pedido ya escrito — o sea
+          que el sitio vende igual desde hoy, sin procesador conectado.
+       4. Al volver del pago, el procesador tiene que devolverlo a
+          https://shockstudio.cc/?pago=ok&plan=mediano  ← ese parámetro es
+          el que dispara el panel de confirmación con el número de orden.
+
+     LÍMITE QUE CONVIENE SABER: esto corre entero en el navegador, así que el
+     número de orden es una referencia para ordenar la conversación, no un
+     comprobante. Quien cobra y confirma de verdad es el procesador; su panel
+     es la fuente de la que hay que fiarse para dar por pagado un pedido. -->
+<script>
+(()=>{
+  const CONFIG={
+    /* ---- OBLIGATORIO: sin esto los botones no llevan a ninguna parte ----
+       Formato internacional, solo dígitos: 506 + número, sin +, espacios ni
+       guiones. Ejemplo para +506 8888 8888 → '50688888888' */
+    whatsapp:'50662939764',
+
+    /* Opcional. Vacío = el bloque de correo no se muestra (mejor eso que un
+       'contacto@dominio' de relleno a la vista de un cliente). */
+    correo:'msdigital.crc@gmail.com',
+
+    /* ---- ENLACES DE PAGO ----
+       Uno por plan. Vacío = ese plan vende por WhatsApp.
+       Sirve el enlace de cualquier procesador (Tilopay, ONVO, PayPal…):
+       lo único que se necesita es una URL a la que mandar al comprador.
+       Al configurar cada uno, poné como URL de retorno:
+         https://shockstudio.cc/?pago=ok&plan=<la clave de acá abajo> */
+    planes:{
+      /* Los precios van por CANTIDAD DE TOMAS, no por horas ni por
+         "paquete": es la única unidad que el cliente entiende y la única
+         que se puede cumplir sin discutir. El costo de generar cada toma
+         es de centavos, así que el escalón entre niveles no paga cómputo
+         — paga el trabajo de dirigir, elegir entre intentos y montar. */
+      chico:   {nombre:'Plan Chico',              precio:'$125',      tomas:'3 tomas',     pago:'https://buy.onvopay.com/test_Mb4c9FYkEeTB8Bs5zSRFkkeQ6OY'},
+      mediano: {nombre:'Plan Mediano',            precio:'$250',      tomas:'6 tomas',     pago:'https://buy.onvopay.com/test_ONYXcBASV8NrMgRCIprMETMScRg'},
+      grande:  {nombre:'Plan Grande',             precio:'$450',      tomas:'9 tomas',     pago:'https://buy.onvopay.com/test_BOFTj5HOY7oz54kpZVONs1xsywI'},
+      /* El nivel a medida no tiene columna ni enlace de pago: su precio
+         depende del alcance, así que siempre abre conversación. 'pago' queda
+         en null a propósito — que nadie le pegue una URL sin pensarlo. */
+      completa:{nombre:'servicio de disponibilidad completa', precio:'a cotizar', tomas:'12 tomas o más', pago:null, cotizar:true}
+    }
+  };
+
+  const wa=texto=>'https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent(texto);
+
+  /* Número de orden legible por teléfono: sin caracteres que se confundan al
+     dictarlos y con la fecha adelante, para poder ordenarlos por antigüedad
+     de un vistazo. */
+  const nuevaOrden=()=>{
+    const d=new Date();
+    const ymd=String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+    let s='';
+    const abc='ACDEFGHJKLMNPQRTUVWXY349';   /* sin B/8, I/1, O/0, S/5, Z/2 */
+    for(let i=0;i<4;i++) s+=abc[Math.floor(Math.random()*abc.length)];
+    return 'SHK-'+ymd+'-'+s;
+  };
+
+  const guardarOrden=(clave,orden)=>{
+    try{ localStorage.setItem('shock:orden:'+clave,orden); }catch(e){}
+  };
+  const leerOrden=clave=>{
+    try{ return localStorage.getItem('shock:orden:'+clave)||''; }catch(e){ return ''; }
+  };
+
+  /* ---- Enlaces de contacto ---- */
+  const saludo='Hola SHOCK, me interesa el servicio para mi propiedad.';
+  document.querySelectorAll('[data-wa-enlace]').forEach(a=>{
+    a.href=wa(saludo); a.target='_blank'; a.rel='noopener';
+  });
+  if(CONFIG.correo){
+    const grupo=document.querySelector('[data-correo-grupo]');
+    const enlace=document.querySelector('[data-correo-enlace]');
+    if(grupo&&enlace){ enlace.href='mailto:'+CONFIG.correo; enlace.textContent=CONFIG.correo; grupo.hidden=false; }
+  }
+
+  /* ---- Compra ---- */
+  document.querySelectorAll('[data-plan]').forEach(boton=>{
+    boton.addEventListener('click',()=>{
+      const clave=boton.dataset.plan;
+      const plan=CONFIG.planes[clave];
+      if(!plan) return;
+      const orden=nuevaOrden();
+      guardarOrden(clave,orden);
+      if(plan.pago){
+        location.href=plan.pago;
+        return;
+      }
+      /* Sin enlace de pago: se abre la conversación con todo escrito. El
+         vendedor recibe plan, alcance y referencia sin preguntar nada.
+         El nivel a medida pide cotización en vez de anunciar una compra:
+         "quiero contratar (a cotizar)" no se entiende. */
+      const texto=(plan.cotizar
+          ? 'Hola SHOCK, quiero cotizar el '+plan.nombre+' ('+plan.tomas+').'
+          : 'Hola SHOCK, quiero contratar el '+plan.nombre+' ('+plan.tomas+' — '+plan.precio+').')+
+        '\nReferencia: '+orden+
+        '\n\nMi propiedad:'+
+        '\n· Nombre:'+
+        '\n· Zona:'+
+        '\n· Espacios que quiero mostrar:';
+      window.open(wa(texto),'_blank','noopener');
+    });
+  });
+
+  /* ---- Vuelta del procesador de pago ---- */
+  (()=>{
+    const par=new URLSearchParams(location.search);
+    if(par.get('pago')!=='ok') return;
+    const clave=par.get('plan')||'';
+    const plan=CONFIG.planes[clave];
+    const panel=document.getElementById('panelPago');
+    if(!panel) return;
+
+    /* La orden se recupera de donde la dejamos al iniciar la compra. Si el
+       cliente pagó desde otro dispositivo o borró sus datos, no inventamos
+       una nueva: se genera una y se guarda, pero lo que importa es que el
+       mensaje salga con ALGO con qué cruzar el pago. */
+    let orden=leerOrden(clave);
+    if(!orden){ orden=nuevaOrden(); guardarOrden(clave,orden); }
+
+    const nombre=plan?plan.nombre:'compra';
+    panel.querySelector('[data-pago-plan]').textContent=nombre;
+    panel.querySelector('[data-pago-orden]').textContent=orden;
+    const texto='Hola SHOCK, acabo de pagar el '+nombre+'.'+
+      '\nOrden: '+orden+
+      '\n\nMi propiedad:'+
+      '\n· Nombre:'+
+      '\n· Zona:'+
+      '\n· Espacios que quiero mostrar:';
+    panel.querySelector('[data-pago-wa]').href=wa(texto);
+    panel.hidden=false;
+
+    const cerrar=()=>{
+      panel.hidden=true;
+      /* Se limpia la URL para que un refresco no vuelva a mostrar el panel
+         de una compra ya atendida. */
+      history.replaceState(null,'',location.pathname);
+    };
+    panel.querySelector('[data-pago-cerrar]').addEventListener('click',cerrar);
+    addEventListener('keydown',ev=>{ if(ev.key==='Escape'&&!panel.hidden) cerrar(); });
+  })();
+
+  /* Aviso en consola si el sitio salió a producción sin número real: es el
+     único error de configuración que rompe la venta entera en silencio. */
+  if(CONFIG.whatsapp==='50600000000'){
+    console.warn('[SHOCK] Falta el número de WhatsApp real en CONFIG.whatsapp — los botones de compra no llegan a ningún lado.');
+  }
+})();
+</script>
+
+<!-- ================= DEMOS EMBEBIDOS =================
+     Tres iframes con el mismo trato: el recorrido completo de "Nuestro
+     valor" y las dos muestras de detalle de "Por qué funciona". Se montan
+     recién cuando su estación está por entrar en cuadro — pesan mucho más
+     que un clip— y no arrancan hasta que el visitante lo pide con el botón.
+
+     La única diferencia entre los dos tipos es la escala: el recorrido se
+     monta a 1280 px y se achica con transform para conservar su maqueta de
+     escritorio; las muestras toman el tamaño real del hueco (ver el
+     comentario de .demo-muestra en el CSS). -->
+<script>
+(()=>{
+  const ANCHO=1280;
+
+  const preparar=(hueco)=>{
+    const marco=hueco.querySelector('iframe');
+    if(!marco) return;
+    const escalado=!hueco.hasAttribute('data-muestra');
+
+    const escalar=()=>{
+      if(!escalado) return;
+      const r=hueco.getBoundingClientRect();
+      if(!r.width) return;
+      const e=r.width/ANCHO;
+      marco.style.transform='scale('+e.toFixed(4)+')';
+      /* El alto del iframe se da en su propio sistema de coordenadas, antes
+         de escalar: por eso se divide. */
+      marco.style.height=(r.height/e)+'px';
+    };
+
+    let montado=false;
+    const montar=()=>{
+      if(montado) return;
+      montado=true;
+      escalar();
+      marco.addEventListener('load',()=>{escalar();marco.classList.add('listo')},{once:true});
+      marco.src=marco.dataset.src;
+    };
+
+    /* Misma razón que los clips: .riel-sticky recorta con overflow, así que un
+       IntersectionObserver da cero por más rootMargin que se le ponga. Se mide
+       la posición a mano. */
+    const cerca=()=>{
+      const r=hueco.getBoundingClientRect();
+      return r.left < innerWidth*2 && r.right > -innerWidth;
+    };
+    /* En móvil con scroll vertical todos los demos están siempre "cerca"
+       (su left/right cae dentro del ancho del viewport). Precargar de
+       inmediato para que estén listos cuando el visitante los abra.
+       En escritorio se sigue usando el reloj + scroll para no cargar todo
+       de golpe antes de que el GSAP lleve la pantalla cerca. */
+    if(matchMedia('(pointer:coarse)').matches){
+      setTimeout(montar,0);
+    } else {
+      setTimeout(montar,1500);
+    }
+
+    addEventListener('resize',escalar);
+    escalar();
+
+    /* VELO — tapa el iframe hasta que el visitante lo pide a propósito. Al
+       hacer clic no solo se destapa: se le avisa al iframe (por postMessage)
+       que arranque solo, así el visitante no tiene que mover nada — ni el
+       mouse ni el scroll. Por eso no hace falta volver a taparlo: no hay
+       scroll adentro que pueda comerse el de la página. */
+    const velo=hueco.querySelector('.velo-demo');
+    if(!velo) return;
+
+    /* La muestra vive adentro de su tarjeta tanto en compu como en cel —
+       antes, en cel, se abría a pantalla completa (navegando a
+       demo-detalle.html de verdad) porque el arrastre del dedo sobre el
+       iframe se peleaba con el scroll de la página, y ninguna combinación
+       de touch-action / preventDefault / bloqueo de scroll lo resolvía
+       del todo. Se sacó la causa de raíz en vez de la muestra: en cel el
+       recorrido ya no se controla arrastrando el dedo sobre el video, sino
+       con los dos botones a los costados (ver demo-detalle.html) — sin
+       arrastre no hay con qué pelearse, así que la muestra puede quedarse
+       tranquila adentro de su tarjeta. */
+    const cerrar=()=>{
+      hueco.classList.remove('demo-activa');
+      velo.classList.remove('oculto');
+      try{ marco.contentWindow.postMessage({tipo:'tapar-demo'},'*') }catch(_){ }
+    };
+
+    const activar=()=>{
+      hueco.classList.add('demo-activa');
+      velo.classList.add('oculto');
+      marco.tabIndex=0;
+      montar();
+      if(!marco.classList.contains('listo')) hueco.classList.add('cargando');
+      marco.addEventListener('load',()=>hueco.classList.remove('cargando'),{once:true});
+      const avisar=()=>{ try{ marco.contentWindow.postMessage('reproducir-demo','*') }catch(_){ } };
+      avisar();
+      marco.addEventListener('load',avisar,{once:true});
+    };
+    velo.addEventListener('click',activar);
+    velo.addEventListener('touchend',(e)=>{e.preventDefault();activar()},{passive:false});
+
+    const cerrarBtn=hueco.querySelector('.demo-cerrar');
+    if(cerrarBtn){
+      cerrarBtn.addEventListener('click',cerrar);
+      cerrarBtn.addEventListener('touchend',(e)=>{e.preventDefault();cerrar()},{passive:false});
+    }
+
+    /* Tapar al salir del marco — mouse en compu, dedo en cel (touchend,
+       manejado adentro de demo-detalle.html vía avisarTapar/'muestra-idle'). */
+    hueco.addEventListener('mouseleave',()=>{
+      if(!velo.classList.contains('oculto')) return;
+      hueco.classList.remove('demo-activa');
+      velo.classList.remove('oculto');
+      try{ marco.contentWindow.postMessage({tipo:'tapar-demo'},'*') }catch(_){ }
+    });
+  };
+
+  document.querySelectorAll('#demoVivo,[data-muestra]').forEach(preparar);
+
+  /* PRECALENTAR EL VIDEO DE LAS MUESTRAS — las 4 tarjetas de "Nuestro
+     valor" apuntan al mismo video/tour.mp4 (37MB), y por diseño no se
+     descarga hasta que el visitante toca "Ver demo" (antes se probó
+     precargarlo en las 4 tarjetas a la vez — 144MB simultáneos, scroll
+     trabado — así que eso quedó descartado a propósito). El punto medio:
+     pedirlo UNA sola vez acá, en segundo plano, bastante después de que
+     cargó lo importante de la página. Como las 4 tarjetas apuntan a la
+     MISMA url, el navegador cachea esta respuesta y CUALQUIERA de las 4
+     que el visitante toque después arranca al instante, sin importar
+     cuál — no hace falta repetir esto por tarjeta.
+     navigator.connection.saveData respeta a quien tiene modo ahorro de
+     datos activado: para esa gente, sigue sin precargar nada, tal como
+     antes (el "Ver demo" sigue funcionando igual, solo tarda lo que
+     tarde la red en ese momento). */
+  setTimeout(()=>{
+    const conexion=navigator.connection;
+    if(conexion && conexion.saveData) return;
+    fetch('video/tour.mp4',{priority:'low'}).catch(()=>{});
+  }, 4000);
+})();
+</script>
+
+<div class="cursor-landing" id="cursorLanding"><i class="arriba"></i><i class="abajo"></i></div>
+<script>
+/* ---- CURSOR A MEDIDA — mover y reaccionar al arrastre ----
+   Solo con puntero fino: en touch 'matchMedia' corta esto de raíz, así
+   que ni se agrega el listener. Aparece recién en el primer mousemove
+   real (evita el círculo pegado a (0,0) antes de que el visitante mueva
+   el mouse) y se apaga si el puntero sale del documento (por ejemplo, al
+   pasar a la barra de pestañas). El estado "arrastrando" se prende con
+   mousedown y se apaga con mouseup en cualquier parte de la página —no
+   hace falta que sea sobre un elemento arrastrable en particular, es
+   nomás una señal visual de "clic sostenido".
+
+   Dentro de las demos (iframes de demo-detalle.html) NO se dibuja un
+   segundo cursor — se veía doble y quedaba mal. En vez de eso, cada
+   iframe le manda a esta página sus propias coordenadas de mouse por
+   postMessage (mientras el puntero está adentro, este documento no
+   recibe mousemove: un iframe es OTRO documento), y acá se convierten a
+   coordenadas de esta página sumando la posición del iframe en pantalla
+   — así el mismo círculo de afuera sigue moviéndose sin cortes al
+   entrar y salir de una demo. */
+(()=>{
+  const cursor=document.getElementById('cursorLanding');
+  if(!cursor) return;
+  const finoYAncho=()=>matchMedia('(pointer:fine)').matches && innerWidth>820;
+  if(!finoYAncho()) return;
+  addEventListener('mousemove',e=>{
+    cursor.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';
+    cursor.classList.add('visible');
+  });
+  document.addEventListener('mouseleave',()=>cursor.classList.remove('visible'));
+  addEventListener('mousedown',()=>cursor.classList.add('arrastrando'));
+  addEventListener('mouseup',()=>cursor.classList.remove('arrastrando'));
+
+  addEventListener('message',e=>{
+    if(!e.data || !e.data.tipo) return;
+    if(e.data.tipo==='cursor-baja'){ cursor.classList.add('arrastrando'); return }
+    if(e.data.tipo==='cursor-sube'){ cursor.classList.remove('arrastrando'); return }
+    if(e.data.tipo!=='cursor-pos') return;
+    const marco=[...document.querySelectorAll('.demo-vivo iframe')]
+      .find(f=>f.contentWindow===e.source);
+    if(!marco) return;
+    const r=marco.getBoundingClientRect();
+    let esc=1;
+    const t=getComputedStyle(marco).transform;
+    if(t && t!=='none'){
+      const m=t.match(/matrix\(([^)]+)\)/);
+      if(m) esc=parseFloat(m[1].split(',')[0])||1;
+    }
+    cursor.style.transform='translate('+(r.left+e.data.x*esc)+'px,'+(r.top+e.data.y*esc)+'px)';
+    cursor.classList.add('visible');
+  });
+})();
+</script>
+
+<script>
+(()=>{
+  const pista=document.getElementById('swipePista');
+  if(!pista) return;
+  window.addEventListener('scroll',()=>pista.classList.add('oculta'),{once:true,passive:true});
+})();
+</script>
+
+<script>
+/* ---- AJUSTE DEL TITULAR (celular) ----
+   Los tamaños del titular en la portada, en celular, se declaran en vw
+   pensados para llenar el ancho de la tarjeta ("Diseño visual" en una
+   línea, "cinematográfico" en la siguiente) — pero un vw fijo no sabe
+   cuánto mide en verdad cada frase: "cinematográfico" es una sola
+   palabra que nunca puede partirse en dos líneas, así que si el vw
+   elegido queda un poco grande para ESE ancho de pantalla exacto, la
+   palabra se corta contra el borde de la tarjeta en vez de encogerse.
+   Achicar el vw a mano para el peor caso dejaba el titular chico en la
+   mayoría de los teléfonos —el problema que se pidió corregir (mucho
+   aire en blanco)—, así que en vez de eso el tamaño de acá es SOLO el
+   punto de partida (grande, pensado para llenar la pantalla) y este
+   script lo encoge nada más si de verdad no entra, comparando el ancho
+   real del texto (scrollWidth) contra el ancho disponible. Nunca agranda
+   — solo evita el corte. Nada de esto toca la versión de escritorio
+   (>820px), que sigue exactamente igual que antes. */
+(()=>{
+  function ajustar(){
+    if(innerWidth>820) return;
+    const cabecera=document.querySelector('.portada-cabecera');
+    const piezas=[document.querySelector('.titular-superior'),
+                   document.querySelector('.titular-principal')];
+    if(!cabecera) return;
+    const limite=cabecera.getBoundingClientRect().right;
+    if(!limite) return;
+    piezas.forEach(el=>{
+      if(!el) return;
+      el.style.fontSize='';
+      /* getBoundingClientRect(), no scrollWidth: 'titular-principal' tiene
+         margin-left (lo desplaza a la derecha), y scrollWidth solo mide su
+         propio contenido sin ese corrimiento — con scrollWidth el script
+         daba por bueno un texto que en la pantalla real ya se pasaba del
+         borde. El borde derecho real (rect.right) sí lo incluye. */
+      const base=parseFloat(getComputedStyle(el).fontSize);
+      const r=el.getBoundingClientRect();
+      if(r.right>limite){
+        const excedente=r.right-limite;
+        const escala=(r.width-excedente)/r.width;
+        el.style.fontSize=(base*escala*.97)+'px';
+      }
+    });
+  }
+  addEventListener('resize',ajustar);
+  addEventListener('load',ajustar);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(ajustar);
+  ajustar();
+})();
+</script>
+</body>
+</html>
