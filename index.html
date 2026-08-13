@@ -1178,17 +1178,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
      flotando sobre el texto en vez de una marca de agua discreta. */
   .est[data-num]::before{font-size:clamp(90px,26vw,220px);top:-3vh;right:-1vw}
   .est{will-change:auto}
-  /* === RIEL MÓVIL: scroll vertical libre === */
-  /* overscroll-behavior-y:none (antes 'contain') es clave y no es cosmético:
-     'contain' bloqueaba que el rebote se escapara hacia el navegador (pull-
-     to-refresh), pero seguía permitiendo el rebote elástico LOCAL en los
-     extremos — y ese rebote nativo peleaba con Lenis (que ya clampea el
-     scroll por su cuenta), así que al llegar abajo del todo y volver a
-     subir se veía un salto: un instante en la posición "cruda" del rebote
-     nativo antes de que Lenis la corrigiera. 'none' mata el rebote nativo
-     por completo (y de paso también evita el pull-to-refresh, más fuerte
-     que 'contain'), dejando a Lenis como única autoridad en los bordes. */
-  html{scroll-snap-type:none;scroll-padding-top:0;overscroll-behavior-y:none}
+  /* Sin Lenis, el rebote elástico nativo en los extremos es normal —
+     'contain' solo evita que se escape hacia el pull-to-refresh del
+     navegador. */
+  html{scroll-snap-type:none;scroll-padding-top:0;overscroll-behavior-y:contain}
   .riel-wrap{height:auto}
   .riel-sticky{position:relative!important;top:auto!important;
     height:auto;overflow:visible}
@@ -1527,7 +1520,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <p class="valor-intro-h">Convertimos tu propiedad en un recorrido cinematográfico continuo, a partir de material existente. Como el que se muestra a continuación.</p>
           <span class="valor-intro-dato">La demo muestra el resultado del servicio: el recorrido de la propiedad se produce a partir del material que envía el cliente.</span>
         </div>
-        <div class="triptico-grid" data-lenis-prevent>
+        <div class="triptico-grid">
           <div class="tri-item">
             <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
                  Bóveda, que el visitante mueve él mismo. Sin data-clip a
@@ -1576,7 +1569,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <h2 class="serif">Nuestro <em>valor</em></h2>
           <span class="contador">Razones 03 — 04</span>
         </div>
-        <div class="triptico-grid" data-lenis-prevent>
+        <div class="triptico-grid">
           <div class="tri-item">
             <!-- Cada muestra es un tramo distinto del mismo recorrido de Casa
                  Bóveda, que el visitante mueve él mismo. Sin data-clip a
@@ -1658,7 +1651,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
               <span class="n">03</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
-                  <h3>Reels listos para publicar</h3>
+                  <h3>Ronda de Ajustes</h3>
                   <span class="caja-mas">+</span>
                 </div>
                 <p>Piezas verticales optimizadas para Instagram y Facebook, en formato y duración adecuados para cada plataforma. El cliente las recibe listas para subir.</p>
@@ -1775,7 +1768,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <h2 class="serif">Planes</h2>
           <span class="contador">Tres niveles</span>
         </div>
-        <div class="planes-grid" data-lenis-prevent>
+        <div class="planes-grid">
           <!-- La escalera de planes: los TRES entregables son siempre los
                mismos (video cinematográfico completo, tomas sueltas por
                espacio, formato vertical para reels — la estación "Qué
@@ -1797,10 +1790,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
             <h3>Chico</h3>
             <span class="plan-precio serif">$125</span>
             <ul class="plan-incluye">
-              <li>Video cinematográfico de los espacios principales</li>
-              <li>Tomas sueltas — un plano por espacio</li>
-              <li>Reels detallados del video principal</li>
+              <li>1 video inmersivo completo de una área a escoger de la propiedad</li>
+              <li>3 tomas individuales detalladas ( video único por toma )</li>
               <li>1 ronda de ajustes</li>
+              <li>Entrega en 72h</li>
             </ul>
             <div class="plan-acciones">
               <button type="button" class="cta-mini" data-plan="chico">Adquirir</button>
@@ -1811,10 +1804,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
             <h3>Mediano</h3>
             <span class="plan-precio serif">$250</span>
             <ul class="plan-incluye">
-              <li>Video cinematográfico de espacios principales y amenidades destacadas</li>
-              <li>Tomas sueltas con más de un ángulo por espacio</li>
-              <li>Reels detallados de la propiedad completa</li>
+              <li>1 video inmersivo completo de dos áreas a escoger de la propiedad</li>
+              <li>6 tomas individuales detalladas ( video único por toma )</li>
               <li>2 rondas de ajustes</li>
+              <li>Entrega en 72h</li>
             </ul>
             <div class="plan-acciones">
               <button type="button" class="cta-mini" data-plan="mediano">Adquirir</button>
@@ -1825,10 +1818,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
             <h3>Grande</h3>
             <span class="plan-precio serif">$450</span>
             <ul class="plan-incluye">
-              <li>Video cinematográfico de la propiedad completa, con el modelo de IA más avanzado</li>
-              <li>Tomas sueltas al mayor nivel de detalle, espacio por espacio</li>
-              <li>Reels detallados de la propiedad completa, de cada toma suelta, y reel en formato especializado para Meta Ads</li>
+              <li>1 video inmersivo de la propiedad completa ( todas las áreas )</li>
+              <li>9 tomas individuales detalladas ( video único por toma )</li>
               <li>3 rondas de ajustes</li>
+              <li>Entrega en 72h</li>
             </ul>
             <div class="plan-acciones">
               <button type="button" class="cta-mini" data-plan="grande">Adquirir</button>
@@ -1840,8 +1833,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
              depende del alcance, así que compararlo al lado de tres precios
              cerrados confunde en vez de ayudar. Vive como una línea al pie
              que abre conversación. -->
-        <p class="planes-pie">¿Necesitás disponibilidad completa — video completo más tomas sueltas
-          detalladas, 12 tomas o más, cadenas o varias propiedades?
+        <p class="planes-pie">¿Necesitás disponibilidad completa — portafolios o varias propiedades?
           <button type="button" class="enlace-pie" data-plan="completa">Pedí una cotización</button>.</p>
       </div>
 
@@ -1927,25 +1919,18 @@ if(!reduced && window.gsap && window.ScrollTrigger){
   gsap.registerPlugin(ScrollTrigger);
   ScrollTrigger.config({ignoreMobileResize:true});
 
-  /* ===== FLUIDEZ — Lenis sincronizado con el ticker de GSAP =====
-     El scroll vertical en móvil NO tiene scroll-snap (ver 'html' dentro de
-     @media(max-width:820px) en el CSS: scroll-snap-type:none a propósito) —
-     es scroll libre, así que Lenis puede tomarlo sin pelear con ningún
-     snap nativo. En touch se activa syncTouch para que el dedo ya no
-     mueva la página 1:1: arrastra un valor objetivo y la página lo
-     persigue con un lerp lento (el "atraso" premium pedido), en vez del
-     fling nativo instantáneo. */
+  /* ===== FLUIDEZ — Lenis solo en escritorio (mouse/trackpad) =====
+     A propósito NO se activa en touch: el modo syncTouch de Lenis es lo que
+     causaba el bug de scroll "trabado" al pasar por el carrusel de demos
+     dentro del riel pineado (ver historial). En touch el scroll nativo del
+     navegador ya corre a la frecuencia real de la pantalla (60/120fps) y no
+     pelea con nada, así que se deja tal cual. En escritorio, en cambio, no
+     hay pin nada raro con el que Lenis choque, así que sí suma: convierte el
+     salto entrecortado de la rueda del mouse en un desplazamiento continuo. */
   let lenis=null;
   const esTouch=matchMedia('(pointer:coarse)').matches;
-  if(window.Lenis){
-    lenis=esTouch
-      ? new Lenis({
-          syncTouch:true,
-          syncTouchLerp:0.075,
-          touchInertiaMultiplier:20,
-          touchMultiplier:1.2
-        })
-      : new Lenis({duration:1.1,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
+  if(window.Lenis && !esTouch){
+    lenis=new Lenis({duration:0.9,easing:t=>1-Math.pow(1-t,3),smoothWheel:true});
     lenis.on('scroll',ScrollTrigger.update);
     gsap.ticker.add(t=>lenis.raf(t*1000));
     gsap.ticker.lagSmoothing(0);
@@ -1962,8 +1947,7 @@ if(!reduced && window.gsap && window.ScrollTrigger){
   const cinta=document.getElementById('cinta');
 
   if(esTouch){
-    /* ===== MÓVIL: scroll vertical libre, con Lenis dándole la inercia
-       lenta (ver bloque de arriba). El fondo queda fixed por CSS. */
+    /* ===== MÓVIL: scroll vertical libre, nativo del navegador. ===== */
     const paneles=Array.from(document.querySelectorAll('[data-est-panel]'));
     const marcas=Array.from(document.querySelectorAll('#marcas [data-est]'));
     const pista=document.querySelector('.regla .pista');
@@ -1988,8 +1972,7 @@ if(!reduced && window.gsap && window.ScrollTrigger){
         const est=document.querySelector(enlace.dataset.ir);
         if(!est) return;
         ev.preventDefault();
-        if(lenis) lenis.scrollTo(est.offsetTop,{duration:1.4});
-        else window.scrollTo({top:est.offsetTop,behavior:'smooth'});
+        window.scrollTo({top:est.offsetTop,behavior:'smooth'});
       });
     });
 
@@ -2009,7 +1992,6 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       if(scrollBloqueado) return;
       scrollBloqueado=true;
       scrollGuardado=window.scrollY;
-      if(lenis) lenis.stop();
       document.body.style.position='fixed';
       document.body.style.top=(-scrollGuardado)+'px';
       document.body.style.left='0';
@@ -2023,15 +2005,6 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       document.body.style.left='';
       document.body.style.right='';
       window.scrollTo(0,scrollGuardado);
-      /* Lenis guarda su propio valor de scroll objetivo; sin re-sincronizarlo
-         acá, al reanudar (lenis.start) intentaría "arrastrar" la página de
-         vuelta hacia donde se había quedado antes del bloqueo. OJO:
-         scrollTo() se ignora en silencio mientras isStopped es true (ver
-         el guard interno de Lenis) — sin force:true este resync no hacía
-         nada, y al hacer start() Lenis tiraba de la página hacia su
-         posición vieja. Eso era el "se traba y se pone mal" al pasar por
-         las demos. */
-      if(lenis){ lenis.scrollTo(scrollGuardado,{immediate:true,force:true}); lenis.start(); }
     };
 
     /* postMessage de muestras → avanzar a siguiente estación */
@@ -2053,8 +2026,7 @@ if(!reduced && window.gsap && window.ScrollTrigger){
       if(!estActual) return;
       const siguiente=paneles[paneles.indexOf(estActual)+1];
       if(!siguiente) return;
-      if(lenis) lenis.scrollTo(siguiente.offsetTop,{duration:1.4});
-      else window.scrollTo({top:siguiente.offsetTop,behavior:'smooth'});
+      window.scrollTo({top:siguiente.offsetTop,behavior:'smooth'});
     });
 
   } else {
