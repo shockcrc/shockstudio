@@ -9,15 +9,13 @@
    página pintaría un instante en oscuro y después "saltaría" a claro —
    el parpadeo clásico de FOUC. Acá arriba, sincrónico, no hay salto.
 
-   En celular el claro es el default (a pedido) — se pinta oscuro solo si
-   el visitante ya lo eligió a mano antes (guardado como 'dark'). En
-   escritorio no importa qué se guarde: el CSS del tema claro vive dentro
-   de un media query de celular, así que ahí siempre se ve oscuro. */
+   El claro (crema cálida) es el default en todos los dispositivos — se
+   pinta oscuro solo si el visitante ya lo eligió a mano antes (guardado
+   como 'dark'). */
 (function(){
   try{
     var t=localStorage.getItem('shock-tema');
-    var esMovil=matchMedia('(max-width:820px)').matches;
-    var claro=esMovil ? (t!=='dark') : (t==='light');
+    var claro=(t!=='dark');
     if(claro) document.documentElement.setAttribute('data-theme','light');
   }catch(_){}
 })();
@@ -225,42 +223,39 @@ nav{position:fixed;top:0;left:0;width:100%;z-index:60;display:flex;justify-conte
 nav .logo-group{display:flex;align-items:center;gap:18px}
 nav .logo{font-family:'Fraunces',serif;font-weight:500;font-size:26px;letter-spacing:.2em;
   color:var(--ink)}
-/* En celular el titular grande de la portada YA dice "SHOCK" — mostrarlo
-   también acá arriba es la misma palabra dos veces en la primera pantalla.
-   Se oculta mientras el visitante sigue en la portada (estación 01) y
-   aparece con un fundido apenas avanza a la estación 02 (ver el toggle de
-   'mostrar-logo' en el JS del riel, sección táctil). En escritorio no
-   aplica: ahí el nav flota sobre el riel horizontal y nunca compite con el
-   titular de la misma forma. */
-@media(max-width:820px){
-  nav .logo{opacity:0;transition:opacity .5s cubic-bezier(.22,.61,.36,1)}
-  nav.mostrar-logo .logo{opacity:1}
-  /* Con el titular invisible en la portada, el separador y los íconos
-     sociales quedaban solos y chicos contra un hueco vacío a la
-     izquierda. Mientras el titular no aparece, se agrandan los íconos y
-     se saca el separador (ya no hay nada de qué separarlos) — al llegar
-     'mostrar-logo' vuelven a su tamaño normal, junto con el fundido del
-     titular. */
-  nav .logo-social{transition:gap .5s cubic-bezier(.22,.61,.36,1),
-    padding-left .5s cubic-bezier(.22,.61,.36,1),border-color .5s ease}
-  nav .logo-social svg{transition:height .5s cubic-bezier(.22,.61,.36,1)}
-  nav:not(.mostrar-logo) .logo-social{gap:18px;padding-left:0;border-left-color:transparent}
-  nav:not(.mostrar-logo) .logo-social svg{height:19px}
-  /* El titular invisible sigue reservando su ancho de todos modos (opacity,
-     no display:none), y eso corría a los íconos hacia el centro por
-     accidente. Se saca ese hueco fantasma para que los íconos queden
-     pegados al borde izquierdo, en el lugar exacto donde iría la
-     palabra — no centrados. */
-  nav:not(.mostrar-logo) .logo{position:absolute;width:0;overflow:hidden;white-space:nowrap}
-  nav:not(.mostrar-logo) .logo-group{position:relative}
-}
+/* El titular grande de la portada YA dice "SHOCK" — mostrarlo también acá
+   arriba es la misma palabra dos veces en la primera pantalla, en
+   cualquier tamaño de pantalla. Se oculta mientras el visitante sigue en
+   la portada (estación 01) y aparece con un fundido apenas avanza a la
+   estación 02 (ver el toggle de 'mostrar-logo' en el JS del riel, tanto
+   en la rama táctil como en la de escritorio). */
+nav .logo{opacity:0;transition:opacity .5s cubic-bezier(.22,.61,.36,1)}
+nav.mostrar-logo .logo{opacity:1}
+/* Con el titular invisible en la portada, el separador y los íconos
+   sociales quedaban solos y chicos contra un hueco vacío a la
+   izquierda. Mientras el titular no aparece, se agrandan los íconos y
+   se saca el separador (ya no hay nada de qué separarlos) — al llegar
+   'mostrar-logo' vuelven a su tamaño normal, junto con el fundido del
+   titular. */
+nav .logo-social{transition:gap .5s cubic-bezier(.22,.61,.36,1),
+  padding-left .5s cubic-bezier(.22,.61,.36,1),border-color .5s ease}
+nav .logo-social svg{transition:height .5s cubic-bezier(.22,.61,.36,1)}
+nav:not(.mostrar-logo) .logo-social{gap:18px;padding-left:0;border-left-color:transparent}
+nav:not(.mostrar-logo) .logo-social svg{height:22px}
+/* El titular invisible sigue reservando su ancho de todos modos (opacity,
+   no display:none), y eso corría a los íconos hacia el centro por
+   accidente. Se saca ese hueco fantasma para que los íconos queden
+   pegados al borde izquierdo, en el lugar exacto donde iría la
+   palabra — no centrados. */
+nav:not(.mostrar-logo) .logo{position:absolute;width:0;overflow:hidden;white-space:nowrap}
+nav:not(.mostrar-logo) .logo-group{position:relative}
 nav .logo span{font-family:inherit;font-weight:inherit}
 nav .logo-social{display:flex;align-items:center;gap:12px;padding-left:16px;
   border-left:1px solid rgba(var(--ink-rgb),.18)}
 nav .logo-social a{color:var(--ink);opacity:.55;display:flex;
   transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
 nav .logo-social a:hover{opacity:1;color:var(--accent)}
-nav .logo-social svg{height:14px;width:auto;display:block}
+nav .logo-social svg{height:18px;width:auto;display:block}
 @media(max-width:700px){nav .logo-social{padding-left:12px;gap:16px}nav .logo-social svg{height:22px}}
 
 /* Selector de tema — mismo trato visual que los íconos sociales, pero sin
@@ -281,7 +276,7 @@ nav .logo-social svg{height:14px;width:auto;display:block}
   :root[data-theme="light"] .theme-toggle .theme-icon-luna{display:block}
 }
 @media(max-width:700px){.theme-toggle svg{height:22px}}
-nav .links{display:flex;gap:14px;font-size:11.5px;letter-spacing:.26em;text-transform:uppercase}
+nav .links{display:flex;gap:14px;font-size:14.5px;letter-spacing:.26em;text-transform:uppercase}
 nav .links a{display:inline-flex;align-items:center;justify-content:center;min-width:118px;
   color:var(--ink);text-decoration:none;background:transparent;
   border:1px solid rgba(var(--ink-rgb),.18);padding:13px 26px;opacity:.85;
@@ -374,12 +369,12 @@ nav .links a:hover{opacity:1;color:var(--accent);border-color:var(--accent)}
    atmósfera oscura, pero un velo cálido pensado para tema oscuro no alcanza
    para que en tema claro quede "tenue" en vez de "una foto oscura con una
    nube encima". Se sube bastante la opacidad del velo, no la de la foto:
-   así conserva algo de textura/profundidad en vez de desaparecer del todo. */
-@media(max-width:820px){
-  :root[data-theme="light"] .riel-fondo .velo{background:
-    linear-gradient(180deg,rgba(var(--paper-rgb),.94) 0%,rgba(var(--paper-rgb),.86) 26%,
-      rgba(var(--paper-rgb),.86) 68%,rgba(var(--paper-rgb),.94) 100%)}
-}
+   así conserva algo de textura/profundidad en vez de desaparecer del todo.
+   Aplica en todos los tamaños de pantalla — el tema claro ya no es solo
+   de celular. */
+:root[data-theme="light"] .riel-fondo .velo{background:
+  linear-gradient(180deg,rgba(var(--paper-rgb),.94) 0%,rgba(var(--paper-rgb),.86) 26%,
+    rgba(var(--paper-rgb),.86) 68%,rgba(var(--paper-rgb),.94) 100%)}
 
 /* El riel propiamente dicho */
 /* Con el fondo transparente todo el texto del riel quedó flotando sobre un
@@ -417,7 +412,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
   pointer-events:none;user-select:none}
 
 /* Etiqueta de categoría — marca a qué ítem del nav pertenece cada área */
-.area-tag{display:inline-block;font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+.area-tag{display:inline-block;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;
   color:var(--accent);border-bottom:1px solid rgba(156,122,76,.4);padding-bottom:6px;
   margin-bottom:2.6vh}
 
@@ -442,7 +437,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
 /* Cintillo — datos del estudio sobre un filete, no una pastilla flotante */
 .portada-cintillo{display:flex;justify-content:space-between;align-items:baseline;
   gap:14px 40px;flex-wrap:wrap;padding-bottom:2vh;border-bottom:1px solid var(--line);
-  font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink2)}
+  font-size:12.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink2)}
 .portada-cintillo b{font-weight:400;color:var(--ink)}
 .portada-cintillo .rumbo{display:inline-flex;align-items:center;gap:12px;color:var(--ink2)}
 .portada-cintillo .rumbo i{display:block;width:46px;height:1px;background:var(--line);
@@ -488,7 +483,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
    regla horizontal que remata la composición del titular + el león, con
    el CTA colgando de ella. Ya no hace falta grid — es un solo bloque. */
 .portada-banda{border-top:1px solid var(--line);padding-top:2.8vh}
-.banda-rotulo{display:block;font-size:10px;letter-spacing:.32em;text-transform:uppercase;
+.banda-rotulo{display:block;font-size:14.5px;letter-spacing:.32em;text-transform:uppercase;
   color:var(--accent);margin-bottom:1.8vh}
 .banda-accion{display:flex;flex-direction:column;align-items:flex-start;gap:1.6vh}
 .banda-accion .cta{padding:14px 30px;background:transparent;color:var(--ink);
@@ -501,7 +496,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
   grid-template-areas:"spine cat video" "spine title video" "spine text video";column-gap:3.4vw;
   row-gap:0;align-items:center}
 .est.lugar .spine{grid-area:spine;writing-mode:vertical-rl;transform:rotate(180deg);
-  font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink2);
+  font-size:14.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink2);
   justify-self:center;white-space:nowrap;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .est.lugar .area-tag{grid-area:cat;justify-self:start;width:fit-content}
 .est.lugar h2{grid-area:title;font-size:clamp(34px,4vw,64px);padding-left:26px;
@@ -516,7 +511,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
 .est.lugar .lugar-texto p{max-width:420px;margin-top:0;font-size:clamp(19px,1.9vw,24px);
   line-height:1.6;color:rgba(var(--ink-rgb),.72)}
 .meta-tags{list-style:none;margin:3.4vh 0 0;padding:0;display:flex;flex-wrap:wrap;row-gap:1.8vh}
-.meta-tags li{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2);
+.meta-tags li{font-size:13.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2);
   padding:0 18px;border-left:1px solid rgba(var(--ink-rgb),.18)}
 .meta-tags li:first-child{border-left:none;padding-left:0}
 .meta-tags li b{display:block;margin-top:8px;font-family:'Fraunces',serif;font-weight:400;
@@ -588,7 +583,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
    a tocarla, el recorrido sigue desde donde quedó. */
 .demo-vivo .velo-demo{position:absolute;inset:0;z-index:4;display:flex;align-items:center;
   justify-content:center;gap:10px;background:rgba(20,16,13,.05);border:0;cursor:pointer;
-  font-family:inherit;letter-spacing:.32em;text-transform:uppercase;font-size:11px;
+  font-family:inherit;letter-spacing:.32em;text-transform:uppercase;font-size:12.5px;
   color:var(--paper2);text-shadow:0 1px 6px rgba(0,0,0,.5);
   opacity:1;transition:opacity .45s cubic-bezier(.22,.61,.36,1),background .45s cubic-bezier(.22,.61,.36,1)}
 .demo-vivo .velo-demo:hover,.demo-vivo .velo-demo:focus-visible{background:rgba(20,16,13,.18)}
@@ -601,7 +596,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
    en que se imprime; escalarla desde 1280 la dejaría ilegible en un
    recuadro de esta altura. */
 .demo-muestra iframe{width:100%;height:100%;transform:none}
-.demo-muestra .velo-demo{font-size:10px;letter-spacing:.28em}
+.demo-muestra .velo-demo{font-size:14.5px;letter-spacing:.28em}
 /* Botón de cerrar: era solo para el modo pantalla completa móvil, que ya
    no existe (la muestra siempre vive en su tarjeta). Se deja el botón en
    el HTML sin quitarlo, pero oculto para siempre. */
@@ -650,14 +645,14 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
    puede colgar de 'a'. El reset de font/background es porque un <button>
    hereda del user-agent, no del documento. */
 .cta-mini{display:inline-block;font-family:inherit;background:transparent;
-  text-decoration:none;color:var(--ink);font-size:12px;letter-spacing:.26em;
+  text-decoration:none;color:var(--ink);font-size:13.5px;letter-spacing:.26em;
   text-transform:uppercase;border:1px solid var(--ink);padding:16px 30px;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
   transition:background .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1),
   border-color .35s cubic-bezier(.22,.61,.36,1)}
 .cta-mini:hover{background:var(--ink);color:var(--paper);text-shadow:none}
 .cta-detalle{display:inline-block;font-family:inherit;background:transparent;
-  text-decoration:none;color:var(--ink2);font-size:11px;letter-spacing:.26em;
+  text-decoration:none;color:var(--ink2);font-size:12.5px;letter-spacing:.26em;
   text-transform:uppercase;border:none;border-bottom:1px solid transparent;padding:0 0 6px;
   cursor:pointer;margin-top:1vh;
   transition:color .3s cubic-bezier(.22,.61,.36,1),border-color .3s cubic-bezier(.22,.61,.36,1)}
@@ -700,9 +695,9 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
   .portada-cabecera{min-height:0}
   .portada-banda{padding-top:2vh}
   .portada-banda p{font-size:17px!important;max-width:none!important}
-  .banda-rotulo{margin-bottom:1.2vh;font-size:11px}
+  .banda-rotulo{margin-bottom:1.2vh;font-size:12.5px}
   .banda-accion{gap:1vh}
-  .banda-accion .cta{padding:15px 32px;font-size:13px}
+  .banda-accion .cta{padding:15px 32px;font-size:14.5px}
 
   /* León — en vertical se mantiene detrás del titular, fundido con el
      fondo, pero centrado y bastante más grande en proporción al ancho
@@ -732,7 +727,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
 
 /* ---- INDICADOR DESLIZÁ (celular) ---- */
 .swipe-pista{display:none;align-items:center;gap:10px;margin-top:2.2vh;
-  font-size:10px;letter-spacing:.26em;text-transform:uppercase;
+  font-size:14.5px;letter-spacing:.26em;text-transform:uppercase;
   color:var(--ink2);opacity:.6;
   animation:swipe-bob 2.4s ease-in-out infinite;
   transition:opacity .6s ease}
@@ -788,7 +783,7 @@ nav{text-shadow:0 1px 3px rgba(var(--paper-rgb),.6),0 2px 16px rgba(var(--paper-
 footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   border-top:1px solid var(--line);
   padding:7vh var(--pad) 6vh;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;
-  font-size:11.5px;letter-spacing:.28em;text-transform:uppercase}
+  font-size:14.5px;letter-spacing:.28em;text-transform:uppercase}
 
 /* Estación de contacto — mismo lenguaje que el resto: sin caja, alineada a la
    izquierda, título grande con línea de acento, numeral fantasma de fondo. */
@@ -796,10 +791,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .contacto-card{text-align:left;padding:0;border:none;display:flex;
   flex-direction:column;gap:2.8vh}
 .contacto-card .catalogo-title{margin-bottom:0}
-.contacto-lead{font-size:16px;line-height:1.8;color:rgba(var(--ink-rgb),.68);max-width:44ch;
+.contacto-lead{font-size:17.5px;line-height:1.8;color:rgba(var(--ink-rgb),.68);max-width:44ch;
   margin-top:-1.4vh}
 .contacto-datos{display:flex;flex-direction:column;align-items:flex-start;gap:1.4vh;
-  font-size:15px}
+  font-size:16.5px}
 .contacto-datos .grupo{display:flex;flex-direction:column;gap:.6vh;margin-top:1vh}
 .contacto-datos .grupo:first-child{margin-top:0}
 .contacto-datos .etiqueta{font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;
@@ -838,7 +833,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   box-shadow:0 40px 90px -30px rgba(13,11,8,.9)}
 .panel-pago-caja h2{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(30px,4vw,52px);line-height:1.02;letter-spacing:-.02em;color:var(--ink)}
-.panel-pago-caja p{margin:0;font-size:15px;line-height:1.75;color:rgba(var(--ink-rgb),.72)}
+.panel-pago-caja p{margin:0;font-size:16.5px;line-height:1.75;color:rgba(var(--ink-rgb),.72)}
 .panel-pago-caja p b{font-weight:400;color:var(--ink)}
 .panel-pago-orden{display:flex;flex-direction:column;gap:.7vh;
   padding:1.8vh 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -869,14 +864,14 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 /* Rótulo y numeral van sobre el video: llevan sombra propia porque acá el
    texto es CLARO sobre material oscuro — al revés que en el resto del sitio. */
 .clip .rotulo{position:absolute;left:16px;bottom:14px;z-index:2;display:flex;
-  align-items:center;gap:10px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  align-items:center;gap:10px;font-size:14.5px;letter-spacing:.3em;text-transform:uppercase;
   color:var(--paper2);text-shadow:0 1px 6px rgba(0,0,0,.5);
   transition:opacity .35s cubic-bezier(.22,.61,.36,1)}
 .clip.demo-activa .rotulo{opacity:0;pointer-events:none}
 .clip .rotulo .tri{width:0;height:0;border-style:solid;
   border-width:5px 0 5px 8px;border-color:transparent transparent transparent var(--paper2)}
 .clip .indice{position:absolute;top:14px;right:16px;z-index:2;font-family:'Fraunces',serif;
-  font-size:12px;letter-spacing:.2em;color:var(--paper2);opacity:.85;
+  font-size:13.5px;letter-spacing:.2em;color:var(--paper2);opacity:.85;
   text-shadow:0 1px 6px rgba(0,0,0,.5)}
 
 /* ================================================================
@@ -896,7 +891,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   border-bottom:1px solid var(--line);padding-bottom:2vh}
 .seccion-cab h2{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(32px,4.2vw,64px);line-height:1.05;letter-spacing:-.02em}
-.seccion-cab .contador{font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+.seccion-cab .contador{font-size:13.5px;letter-spacing:.3em;text-transform:uppercase;
   color:var(--ink2);white-space:nowrap}
 .triptico-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.6vw}
 .tri-item{display:flex;flex-direction:column}
@@ -935,7 +930,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
      (.riel{align-items:center}), aparecen desniveladas entre sí al pasar
      de una a otra — el "salto" que se ve en el screenshot. */
   min-height:2.24em;display:flex;align-items:flex-start}
-.tri-item .caja-info p{font-size:16px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:36ch}
+.tri-item .caja-info p{font-size:17.5px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:36ch}
 
 /* ================================================================
    ESTACIÓN 04 — FICHAS (lo que ofrecemos)
@@ -952,11 +947,11 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .fichas-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1.2vh}
 .fichas-lista li{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start;
   padding-top:1.2vh}
-.fichas-lista .n{font-family:'Fraunces',serif;font-weight:300;font-size:14px;
+.fichas-lista .n{font-family:'Fraunces',serif;font-weight:300;font-size:15.5px;
   letter-spacing:.2em;color:var(--accent)}
 .fichas-lista .caja-info h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(21px,2.3vw,34px);line-height:1.1;letter-spacing:-.015em;color:var(--ink)}
-.fichas-lista .caja-info p{font-size:16px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:48ch}
+.fichas-lista .caja-info p{font-size:17.5px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:48ch}
 
 /* ================================================================
    ESTACIÓN 06 — PLANES (catálogo)
@@ -981,12 +976,12 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .plan-col{display:flex;flex-direction:column;gap:1.3vh;padding:0 2.8vw;
   border-left:1px solid var(--line)}
 .plan-col:first-child{padding-left:0;border-left:none}
-.plan-col .nivel{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+.plan-col .nivel{font-size:12.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
 .plan-col h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(28px,3.4vw,50px);line-height:1;letter-spacing:-.02em;color:var(--ink)}
 .plan-col .plan-precio{font-size:clamp(26px,2.7vw,40px)}
 .plan-col .plan-incluye{margin-top:.4vh}
-.plan-col .plan-incluye li{font-size:15px}
+.plan-col .plan-incluye li{font-size:16.5px}
 .plan-col .plan-acciones{margin-top:auto;padding-top:1.4vh}
 /* El nivel del medio es el que más se contrata: lleva el filete de acento
    completo en vez del filete gris, sin caja ni fondo (nada de "tarjeta"). */
@@ -1058,7 +1053,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .valor-intro-h{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(20px,2.3vw,32px);line-height:1.2;letter-spacing:-.01em;
   color:var(--ink)}
-.valor-intro-dato{display:block;margin-top:1vh;font-size:11px;letter-spacing:.28em;
+.valor-intro-dato{display:block;margin-top:1vh;font-size:12.5px;letter-spacing:.28em;
   text-transform:uppercase;color:var(--ink2)}
 
 /* Pie del catálogo — el nivel a medida, fuera de la comparación de precios */
@@ -1067,7 +1062,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
    acá se sumaba a ese gap en vez de reemplazarlo, duplicando el aire
    antes de esta línea sin necesidad. */
 .planes-pie{padding-top:1.4vh;border-top:1px solid var(--line);
-  font-size:14px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:70ch}
+  font-size:15.5px;line-height:1.7;color:rgba(var(--ink-rgb),.72);max-width:70ch}
 .enlace-pie{font-family:inherit;font-size:inherit;background:transparent;border:none;
   padding:0;color:var(--ink);cursor:pointer;border-bottom:1px solid var(--accent);
   transition:color .3s cubic-bezier(.22,.61,.36,1)}
@@ -1078,7 +1073,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   max-width:52ch;padding-top:1.6vh;border-top:1px solid var(--line)}
 
 /* Línea de precio bajo el botón de la portada */
-.banda-desde{display:block;margin-top:1.4vh;font-size:11px;letter-spacing:.22em;
+.banda-desde{display:block;margin-top:1.4vh;font-size:12.5px;letter-spacing:.22em;
   text-transform:uppercase;color:var(--ink2)}
 
 /* "Cómo se produce" — línea de tiempo horizontal. El ::before dibuja el
@@ -1090,12 +1085,12 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
 .proceso-linea{display:grid;grid-template-columns:repeat(4,1fr);gap:2.4vw;position:relative}
 .proceso-linea::before{content:'';position:absolute;top:19px;left:0;right:0;height:1px;background:var(--line)}
 .proceso-paso{position:relative;display:flex;flex-direction:column;gap:1.2vh}
-.proceso-num{position:relative;z-index:1;align-self:flex-start;background:var(--paper);
-  padding-right:16px;font-family:'Fraunces',serif;font-weight:300;font-size:28px;
+.proceso-num{position:relative;z-index:1;align-self:flex-start;
+  font-family:'Fraunces',serif;font-weight:300;font-size:28px;
   letter-spacing:.02em;color:var(--accent)}
 .proceso-paso h3{margin:0;font-family:'Fraunces',serif;font-weight:300;
   font-size:clamp(18px,1.7vw,22px);line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
-.proceso-paso p{margin:0;font-size:14px;line-height:1.7;color:rgba(var(--ink-rgb),.72)}
+.proceso-paso p{margin:0;font-size:15.5px;line-height:1.7;color:rgba(var(--ink-rgb),.72)}
 @media(max-width:1100px){
   .proceso-linea{grid-template-columns:1fr 1fr;row-gap:3.4vh}
   .proceso-linea::before{display:none}
@@ -1107,7 +1102,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   .est.proceso{width:88vw;gap:2.4vh}
   .proceso-linea{grid-template-columns:1fr;gap:2.6vh}
   .proceso-num{font-size:22px}
-  .proceso-paso p{font-size:13px}
+  .proceso-paso p{font-size:14.5px}
 }
 
 @media(max-width:1240px){
@@ -1342,7 +1337,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   .seccion-cab{padding-bottom:1.4vh!important}
   .seccion-cab h2{font-size:clamp(22px,5.8vw,28px)!important}
   .valor-intro{margin-bottom:0!important}
-  .valor-intro-h{font-size:16px!important;line-height:1.45!important}
+  .valor-intro-h{font-size:17.5px!important;line-height:1.45!important}
   .valor-intro-dato{font-size:9.5px!important;margin-top:.5vh!important}
   /* Grid de demos: crece para llenar el panel */
   .est.triptico.dos .triptico-grid,
@@ -1359,7 +1354,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   .fichas-lista{flex:1 1 auto!important;min-height:0!important;justify-content:space-evenly!important;gap:0!important}
   .fichas-lista li{padding-top:.8vh!important;gap:12px!important}
   .fichas-nota{
-    font-size:11px!important;line-height:1.55!important;
+    font-size:12.5px!important;line-height:1.55!important;
     margin-top:1.2vh!important;padding-top:1.2vh!important
   }
 
@@ -1371,15 +1366,15 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
   .plan-col .plan-acciones{padding-top:1.2vh!important;margin-top:0!important}
   .cta-mini{
     padding:13px 20px!important;
-    font-size:11px!important;
+    font-size:12.5px!important;
     letter-spacing:.2em!important
   }
   .planes-pie{
-    font-size:11.5px!important;
+    font-size:14.5px!important;
     line-height:1.55!important;
     padding-top:1.2vh!important
   }
-  .plan-col .plan-incluye li{font-size:13px!important;line-height:1.5!important}
+  .plan-col .plan-incluye li{font-size:14.5px!important;line-height:1.5!important}
   .plan-col h3{font-size:clamp(24px,3vw,30px)!important}
   .plan-col .plan-precio{font-size:clamp(24px,2.5vw,32px)!important}
 }
@@ -1476,7 +1471,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
         </div>
 
         <div class="portada-banda">
-          <p style="font-size:15px;line-height:1.75;color:var(--ink2);max-width:44ch;margin-bottom:2.2vh">De fotos estáticas a tours inmersivos. Producción 100% remota, entrega en 72 horas.</p>
+          <p style="font-size:16.5px;line-height:1.75;color:var(--ink2);max-width:44ch;margin-bottom:2.2vh">De fotos estáticas a tours inmersivos. Producción 100% remota, entrega en 72 horas.</p>
           <div class="banda-accion">
             <a href="#catalogo" data-ir="#catalogo" class="cta">Ver planes</a>
           </div>
@@ -1897,10 +1892,10 @@ if(!((performance.getEntriesByType('navigation')[0]||{}).type==='back_forward'))
     }else{
       raiz.setAttribute('data-theme','light');
       try{ localStorage.setItem('shock-tema','light'); }catch(_){}
-      if(metaColor) metaColor.setAttribute('content','#F1EAD9');
+      if(metaColor) metaColor.setAttribute('content','#E8D9C7');
     }
   });
-  if(raizEsClara()) metaColor && metaColor.setAttribute('content','#F1EAD9');
+  if(raizEsClara()) metaColor && metaColor.setAttribute('content','#E8D9C7');
   function raizEsClara(){ return document.documentElement.getAttribute('data-theme')==='light'; }
 })();
 </script>
@@ -2087,12 +2082,14 @@ if(!reduced && window.gsap && window.ScrollTrigger){
 
     (()=>{
       const marcas=gsap.utils.toArray('#marcas [data-est]');
+      const navEl=document.querySelector('nav');
       ScrollTrigger.create({
         trigger:'.riel-wrap',start:'top top',end:'bottom bottom',scrub:true,
         onUpdate:self=>{
           const p=self.progress;
           const i=Math.min(marcas.length-1,Math.floor(p*marcas.length));
           marcas.forEach((m,k)=>m.classList.toggle('on',k===i));
+          if(navEl) navEl.classList.toggle('mostrar-logo',i>0);
         }
       });
     })();
