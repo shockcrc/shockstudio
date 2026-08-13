@@ -135,21 +135,18 @@
    demás (textos silenciados, veladuras, hairlines, --line ya definida
    arriba) siga funcionando sin reescribir cada regla — ver nota en :root.
 
-   A pedido, el claro queda disponible solo en pantallas angostas: en
-   escritorio el sitio se queda siempre en oscuro, sin importar lo que haya
-   guardado en localStorage. Por eso todo el bloque vive dentro de este
-   media query en vez de en el selector solo. */
+   Tema claro disponible en todos los dispositivos con crema champagne. */
+:root[data-theme="light"]{
+  --paper:#F0E8D8;
+  --paper2:#E4D9C1;
+  --ink:#241C12;
+  --ink2:#6B5F4C;
+  --ink-rgb:36,28,18;
+  --paper-rgb:240,232,216;
+  --accent:#9A7A3E;
+  --accent-deep:#7C5E2E;
+}
 @media(max-width:820px){
-  :root[data-theme="light"]{
-    --paper:#F1EAD9;
-    --paper2:#E4D9C1;
-    --ink:#241C12;
-    --ink2:#6B5F4C;
-    --ink-rgb:36,28,18;
-    --paper-rgb:241,234,217;
-    --accent:#9A7A3E;
-    --accent-deep:#7C5E2E;
-  }
 }
 *{margin:0;padding:0;box-sizing:border-box}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -1479,7 +1476,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
         </div>
 
         <div class="portada-banda">
-          <p style="font-size:15px;line-height:1.75;color:var(--ink2);max-width:44ch;margin-bottom:2.2vh">Tours inmersivos para hospedajes de lujo. Producción 100% remota, entrega en 72 horas.</p>
+          <p style="font-size:15px;line-height:1.75;color:var(--ink2);max-width:44ch;margin-bottom:2.2vh">De fotos estáticas a tours inmersivos. Producción 100% remota, entrega en 72 horas.</p>
           <div class="banda-accion">
             <a href="#catalogo" data-ir="#catalogo" class="cta">Ver planes</a>
           </div>
@@ -1556,7 +1553,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                 <h3>Facilitar reservas</h3>
                 <span class="caja-mas">+</span>
               </div>
-              <p>El huésped compara antes de reservar. La propiedad que se percibe de mayor valor es la que elige — y la que puede cobrar más por lo mismo.</p>
+              <p>Se conoce mejor la propiedad, se entienden los espacios y la reserva se concreta de forma más directa.</p>
             </div>
           </div>
         </div>
@@ -1634,7 +1631,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                   <h3>El tour completo</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>Un video cinematográfico continuo que recorre la propiedad de principio a fin. No una grabación genérica, sino una pieza que posiciona la propiedad en el nivel que merece.</p>
+                <p>A partir de las fotos de la propiedad, se crea un recorrido inmersivo donde el huésped siente que está adentro. Experimenta cada espacio antes de reservar. Alcance según el plan: 1 área en Chico (planta baja, alta o exterior), 2 áreas en Mediano, o la propiedad completa en Grande.</p>
               </div>
             </li>
             <li>
@@ -1644,21 +1641,21 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                   <h3>Cada espacio, por separado</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>Tomas sueltas individuales de cada ambiente destacado de la propiedad, listas para usarse en publicaciones, historias o campañas específicas por espacio.</p>
+                <p>Tomas individuales de cada ambiente destacado de la propiedad, listas para usarse en publicaciones, historias o campañas específicas por espacio.</p>
               </div>
             </li>
             <li>
               <span class="n">03</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
-                  <h3>Ronda de Ajustes</h3>
+                  <h3>Rondas de ajustes</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>Piezas verticales optimizadas para Instagram y Facebook, en formato y duración adecuados para cada plataforma. El cliente las recibe listas para subir.</p>
+                <p>Modificaciones al material según el plan contratado (1, 2 o 3 rondas). Se realizan dentro de 24 horas después de la entrega, cualquier cambio que el cliente solicite en los videos.</p>
               </div>
             </li>
           </ul>
-          <p class="fichas-nota">Cada entrega pasa por dirección de arte y edición cinematográfica real, potenciada con IA de video de última generación — no una plantilla automática, un resultado curado a mano.</p>
+          <p class="fichas-nota">El resultado no es solo visual. Es valor agregado al hospedaje — lo que convence al huésped y posiciona la propiedad.</p>
         </div>
       </div>
 
@@ -1687,7 +1684,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <div class="proceso-paso">
             <span class="proceso-num">02</span>
             <h3>Envía su material</h3>
-            <p>Proporciona fotografías de los espacios a destacar, siguiendo una guía sencilla de ángulos e iluminación proporcionada previamente. No se requiere equipo profesional.</p>
+            <p>Proporciona fotografías de los espacios a destacar mediante un proceso directo y sin complicaciones. No se requiere equipo profesional.</p>
           </div>
           <div class="proceso-paso">
             <span class="proceso-num">03</span>
@@ -1697,7 +1694,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
           <div class="proceso-paso">
             <span class="proceso-num">04</span>
             <h3>Recibe todo listo</h3>
-            <p>Videos, tomas sueltas y reels — listos para publicar. Se confirma el 50% restante contra entrega.</p>
+            <p>Video principal, tomas individuales y modificaciones según el plan — listos. Se confirma el 50% restante contra entrega.</p>
           </div>
         </div>
       </div>
@@ -1717,10 +1714,10 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
               <span class="n">01</span>
               <div class="caja-info" tabindex="0" role="button" aria-expanded="false">
                 <div class="caja-cab">
-                  <h3>¿Necesito equipo profesional?</h3>
+                  <h3>¿Qué se necesita?</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>No se requiere equipo profesional. El material se produce a partir de fotografías tomadas por el propio cliente, siguiendo una guía sencilla de ángulos e iluminación proporcionada previamente. Todo el trabajo de cámara, movimiento y producción cinematográfica se realiza mediante tecnología especializada.</p>
+                <p>Fotografías de los espacios de la propiedad. A mayor cantidad de fotos desde distintos ángulos, mejor y más continuo será el resultado del tour.</p>
               </div>
             </li>
             <li>
@@ -1786,7 +1783,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                    generar, que es lo que de verdad justifica el salto de
                    precio (no es el mismo costo de producción). -->
           <div class="plan-col">
-            <span class="nivel">Nivel 01 — Para empezar</span>
+            <span class="nivel">Nivel 01 — Destacar espacios</span>
             <h3>Chico</h3>
             <span class="plan-precio serif">$125</span>
             <ul class="plan-incluye">
@@ -1800,7 +1797,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
             </div>
           </div>
           <div class="plan-col destacado">
-            <span class="nivel">Nivel 02 — El más elegido</span>
+            <span class="nivel">Nivel 02 — Lo Esencial</span>
             <h3>Mediano</h3>
             <span class="plan-precio serif">$250</span>
             <ul class="plan-incluye">
@@ -1814,7 +1811,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
             </div>
           </div>
           <div class="plan-col">
-            <span class="nivel">Nivel 03 — Cobertura amplia</span>
+            <span class="nivel">Nivel 03 — Cobertura Total</span>
             <h3>Grande</h3>
             <span class="plan-precio serif">$450</span>
             <ul class="plan-incluye">
