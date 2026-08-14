@@ -261,20 +261,19 @@ nav .logo-social svg{height:18px;width:auto;display:block}
 /* Selector de tema — mismo trato visual que los íconos sociales, pero sin
    <a>: es una acción de la página, no un link externo. Se muestra un solo
    ícono a la vez (el tema AL QUE SE CAMBIA si se hace clic, no el actual).
-   Oculto en escritorio a propósito: el tema claro es solo para celular
-   (ver el media query de la paleta más arriba), así que el botón no tiene
-   nada que hacer ahí. */
-.theme-toggle{display:none;background:none;border:none;padding:0;cursor:pointer;
+   Visible en todos los tamaños de pantalla: el claro es el default en
+   todos lados, pero a veces el navegador ya tenía guardado 'dark' de una
+   visita anterior y la página arranca oscura sin que el visitante lo haya
+   pedido esa vez — con el botón siempre visible, revertirlo es un clic,
+   en vez de tener que borrar localStorage a mano. */
+.theme-toggle{display:flex;background:none;border:none;padding:0;cursor:pointer;
   color:var(--ink);opacity:.55;align-items:center;
   transition:opacity .35s cubic-bezier(.22,.61,.36,1),color .35s cubic-bezier(.22,.61,.36,1)}
 .theme-toggle:hover{opacity:1;color:var(--accent)}
 .theme-toggle svg{height:15px;width:auto;display:block}
 .theme-toggle .theme-icon-luna{display:none}
-@media(max-width:820px){
-  .theme-toggle{display:flex}
-  :root[data-theme="light"] .theme-toggle .theme-icon-sol{display:none}
-  :root[data-theme="light"] .theme-toggle .theme-icon-luna{display:block}
-}
+:root[data-theme="light"] .theme-toggle .theme-icon-sol{display:none}
+:root[data-theme="light"] .theme-toggle .theme-icon-luna{display:block}
 @media(max-width:700px){.theme-toggle svg{height:22px}}
 nav .links{display:flex;gap:14px;font-size:14.5px;letter-spacing:.26em;text-transform:uppercase}
 nav .links a{display:inline-flex;align-items:center;justify-content:center;min-width:118px;
@@ -1742,7 +1741,7 @@ footer{position:relative;z-index:2;background:transparent;color:var(--ink2);
                   <h3>¿Qué recibo al final?</h3>
                   <span class="caja-mas">+</span>
                 </div>
-                <p>Todo se entrega por enlace de descarga (Google Drive): el video completo, las tomas sueltas por espacio y los reels, ya organizados y listos para publicar.</p>
+                <p>Todo se entrega por enlace de descarga (Google Drive): el video completo, las tomas individuales por espacio, e instrucciones de uso y recomendaciones para publicarlo.</p>
               </div>
             </li>
           </ul>
